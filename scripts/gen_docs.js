@@ -348,7 +348,7 @@ function renderDocumentationHtml(byCat) {
       <section class="docs-section" id="overview">
         <h2>Overview</h2>
         <p>OpenCircom is a library of reusable <strong>Circom 2.x</strong> templates for zero-knowledge applications: hashing (Poseidon, MiMC, SHA-256), comparators, Merkle proofs, identity (Semaphore-style), voting, MACI v1 building blocks, and utilities. There is <strong>no dependency on circomlib</strong>; implementations are self-contained and covered by 153+ real Groth16 tests.</p>
-        <p>Install via npm, add the circuits folder to your Circom include path (<code>-l</code>), and compose templates in your own circuits. Use the Hardhat or Foundry boilerplates for a full compile → verifier → test pipeline.</p>
+        <p>Install via npm, add the circuits folder to your Circom include path (<code>-l</code>), and compose templates in your own circuits. Use the <a href="https://github.com/jose-compu/opencircom-hardhat-boilerplate" target="_blank" rel="noopener">Hardhat</a> or <a href="https://github.com/jose-compu/opencircom-foundry-boilerplate" target="_blank" rel="noopener">Foundry</a> boilerplates for a full compile → verifier → test pipeline.</p>
       </section>
 
       <section class="docs-section" id="install">
@@ -383,7 +383,7 @@ npx opencircom path</code></pre>
           <li>Use snarkjs (or your flow) to generate the Groth16 verifier Solidity contract.</li>
           <li>Deploy or import the verifier in Hardhat tests and call it from your application contracts.</li>
         </ol>
-        <p>See the <strong>opencircom-hardhat-boilerplate</strong> starter repo for a wired pipeline (compile circuits, generate verifier, JS tests).</p>
+        <p>See the <a href="https://github.com/jose-compu/opencircom-hardhat-boilerplate" target="_blank" rel="noopener"><strong>opencircom-hardhat-boilerplate</strong></a> starter repo for a wired pipeline (compile circuits, generate verifier, JS tests).</p>
       </section>
 
       <section class="docs-section" id="foundry">
@@ -394,7 +394,7 @@ npx opencircom path</code></pre>
           <li>Generate the Solidity verifier with snarkjs; place the <code>.sol</code> file in <code>src/</code>.</li>
           <li>Run <code>forge build</code> and <code>forge test</code>.</li>
         </ol>
-        <p>See the <strong>opencircom-foundry-boilerplate</strong> for submodule setup, npm compile scripts, and Solidity tests.</p>
+        <p>See the <a href="https://github.com/jose-compu/opencircom-foundry-boilerplate" target="_blank" rel="noopener"><strong>opencircom-foundry-boilerplate</strong></a> for submodule setup, npm compile scripts, and Solidity tests.</p>
       </section>
 
       <section class="docs-section" id="cli-ref">
