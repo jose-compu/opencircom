@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="OpenCircom v0.7.0 documentation — installation, CLI, Hardhat/Foundry integration, security, and full circuit template reference." />
+  <title>Documentation — OpenCircom</title>
+  <link rel="icon" href="assets/img/logo.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="docs-page">
+  <header class="site-header">
+    <div class="container">
+      <a class="logo-link" href="index.html">
+        <img src="assets/img/logo.png" alt="OpenCircom" />
+        <span class="logo-text">open<span>circom</span></span>
+      </a>
+      <nav>
+        <a href="index.html#concept">Concept</a>
+        <a href="index.html#circuits">Circuits</a>
+        <a href="documentation.html" class="nav-active">Documentation</a>
+        <a href="index.html#start">Quick start</a>
+        <a href="https://github.com/jose-compu/opencircom" target="_blank" rel="noopener">GitHub</a>
+        <a class="btn btn-primary" href="https://www.npmjs.com/package/opencircom" target="_blank" rel="noopener">npm install</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="docs-layout">
+    <aside class="docs-sidebar" aria-label="Documentation navigation">
+      <label class="docs-search-label" for="docs-search">Search templates</label>
+      <input type="search" id="docs-search" class="docs-search" placeholder="Filter by name, signal, file…" autocomplete="off" />
+      <div class="sidebar-group"><p class="sidebar-heading">Guide</p><ul><li><a href="#overview">Overview</a></li><li><a href="#install">Installation</a></li><li><a href="#includes">Include paths</a></li><li><a href="#hardhat">Hardhat</a></li><li><a href="#foundry">Foundry</a></li><li><a href="#cli-ref">CLI reference</a></li><li><a href="#testing">Testing</a></li><li><a href="#security">Security</a></li><li><a href="#comments">Comment format</a></li></ul></div><div class="sidebar-group"><p class="sidebar-heading">Circuit reference</p><ul><li><a href="#cat-arithmetic">Arithmetic</a></li><li><a href="#cat-comparators">Comparators &amp; range</a></li><li><a href="#cat-bitify">Bitify</a></li><li><a href="#cat-gates">Gates</a></li><li><a href="#cat-mux">Mux &amp; select</a></li><li><a href="#cat-utils">Utils</a></li><li><a href="#cat-string_data">String &amp; data</a></li><li><a href="#cat-hashing">Hashing</a></li><li><a href="#cat-merkle">Merkle</a></li><li><a href="#cat-voting">Voting</a></li><li><a href="#cat-other">Other</a></li></ul></div>
+    </aside>
+
+    <main class="docs-content">
+      <header class="docs-header">
+        <p class="section-label">Documentation</p>
+        <h1>OpenCircom reference</h1>
+        <p class="docs-lead">v0.7.0 — 96 circuit templates, CLI tooling, integration guides, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
+      </header>
+
+      <section class="docs-section" id="overview">
+        <h2>Overview</h2>
+        <p>OpenCircom is a library of reusable <strong>Circom 2.x</strong> templates for zero-knowledge applications: hashing (Poseidon, MiMC, SHA-256), comparators, Merkle proofs, identity (Semaphore-style), voting, MACI v1 building blocks, and utilities. There is <strong>no dependency on circomlib</strong>; implementations are self-contained and covered by 153+ real Groth16 tests.</p>
+        <p>Install via npm, add the circuits folder to your Circom include path (<code>-l</code>), and compose templates in your own circuits. Use the Hardhat or Foundry boilerplates for a full compile → verifier → test pipeline.</p>
+      </section>
+
+      <section class="docs-section" id="install">
+        <h2>Installation</h2>
+        <pre class="code-block"><code class="language-bash">npm install opencircom</code></pre>
+        <p>Peer dependency: <strong>circom 2.x</strong> must be installed and available on <code>PATH</code>. OpenCircom does not bundle the compiler.</p>
+        <p>Package version: <code>^0.7.0</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
+      </section>
+
+      <section class="docs-section" id="includes">
+        <h2>Include paths &amp; compilation</h2>
+        <p>Reference templates with paths relative to the include directory:</p>
+        <pre class="code-block"><code class="language-circom">include "opencircom/circuits/hashing/poseidon.circom";
+include "opencircom/circuits/merkle/merkle_inclusion.circom";</code></pre>
+        <p>Compile with the opencircom circuits on the include path:</p>
+        <pre class="code-block"><code class="language-bash"># Manual
+circom your.circom --r1cs --wasm -o build -l node_modules/opencircom/circuits
+
+# CLI (adds include path automatically)
+npx opencircom compile circuits/YourCircuit.circom -o build
+
+# Print include path only
+npx opencircom path</code></pre>
+        <p>If you clone or submodule the repo as <code>opencircom/</code> in your project root, use <code>-l opencircom/circuits</code> instead.</p>
+      </section>
+
+      <section class="docs-section" id="hardhat">
+        <h2>Hardhat integration</h2>
+        <ol class="docs-steps">
+          <li>Add <code>opencircom</code> as an npm dependency.</li>
+          <li>In your Circom build step, pass <code>-l node_modules/opencircom/circuits</code>.</li>
+          <li>Use snarkjs (or your flow) to generate the Groth16 verifier Solidity contract.</li>
+          <li>Deploy or import the verifier in Hardhat tests and call it from your application contracts.</li>
+        </ol>
+        <p>See the <strong>opencircom-hardhat-boilerplate</strong> starter repo for a wired pipeline (compile circuits, generate verifier, JS tests).</p>
+      </section>
+
+      <section class="docs-section" id="foundry">
+        <h2>Foundry integration</h2>
+        <ol class="docs-steps">
+          <li>Install via npm: <code>npm install opencircom</code>, or add as a Git submodule under <code>lib/opencircom</code>.</li>
+          <li>Run <code>circom</code> with <code>-l node_modules/opencircom/circuits</code> (or <code>-l lib/opencircom/circuits</code>).</li>
+          <li>Generate the Solidity verifier with snarkjs; place the <code>.sol</code> file in <code>src/</code>.</li>
+          <li>Run <code>forge build</code> and <code>forge test</code>.</li>
+        </ol>
+        <p>See the <strong>opencircom-foundry-boilerplate</strong> for submodule setup, npm compile scripts, and Solidity tests.</p>
+      </section>
+
+      <section class="docs-section" id="cli-ref">
+        <h2>CLI reference</h2>
+        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+):</p>
+        <div class="docs-table-wrap">
+          <table class="docs-table">
+            <thead><tr><th>Command</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>npx opencircom path</code></td><td>Print absolute path to <code>circuits/</code> for manual <code>-l</code> flags.</td></tr>
+              <tr><td><code>npx opencircom compile &lt;file&gt; -o &lt;dir&gt;</code></td><td>Compile a circuit with opencircom on the include path.</td></tr>
+              <tr><td><code>npx opencircom compile --all-test -o &lt;dir&gt;</code></td><td>Compile every wrapper in <code>test/circuits/</code> (used by <code>npm test</code>).</td></tr>
+              <tr><td><code>npx opencircom list</code></td><td>List exported templates with descriptions from circuit comments.</td></tr>
+              <tr><td><code>npx opencircom init &lt;name&gt;</code></td><td>Scaffold a minimal Poseidon commitment circuit and mocha test file.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="docs-section" id="testing">
+        <h2>Testing</h2>
+        <p>Tests compile real circuits, run a small Powers of Tau ceremony, generate Groth16 proofs with snarkjs, and verify — no mocks on the proof path.</p>
+        <pre class="code-block"><code class="language-bash">git clone https://github.com/jose-compu/opencircom.git
+cd opencircom
+npm install
+npm test</code></pre>
+        <p><code>npm test</code> runs <code>compile:test</code> (all test circuits) then <code>setup:zk</code> (ptau + zkey). First run can take about a minute.</p>
+        <p>Coverage includes hashing, comparators, Merkle (inclusion, sparse, incremental, update, allowlist), identity, nullifiers, voting, MACI, arithmetic, utils, string validation, and full Groth16 prove/verify flows.</p>
+      </section>
+
+      <section class="docs-section" id="security">
+        <h2>Security</h2>
+        <ul class="docs-list">
+          <li><strong>Range checks:</strong> Use <code>StrictNum2Bits(n)</code> or <code>RangeProof(n)</code> for untrusted inputs; <code>LessThan(n)</code> assumes inputs &lt; 2<sup>n</sup>.</li>
+          <li><strong>Merkle:</strong> <code>pathIndices[i]</code> are constrained binary in-circuit; <code>Switcher</code> constrains <code>sel</code> to {0,1}.</li>
+          <li><strong>Nullifier:</strong> Use a unique <code>externalNullifier</code> per action to avoid cross-action replay.</li>
+          <li><strong>Hashing:</strong> Poseidon uses standard Hades parameters; constants in <code>circuits/hashing/poseidon_constants.circom</code>.</li>
+          <li><strong>Audit (0.5.0):</strong> Binary constraints and range checks hardened in Switcher, ForceEqualIfEnabled, IncrementalMerkleInclusion, DivRem, and PadPKCS7.</li>
+          <li><strong>MACI:</strong> EdDSA, ECDH shared keys, and full DuplexSponge encryption remain off-circuit (coordinator layer). See <a href="https://maci.pse.dev/docs/v1.2/spec">MACI v1 spec</a>.</li>
+        </ul>
+        <p>Full notes: <a href="https://github.com/jose-compu/opencircom/blob/main/SECURITY.md">SECURITY.md</a> on GitHub.</p>
+      </section>
+
+      <section class="docs-section" id="comments">
+        <h2>Comment format</h2>
+        <p>Templates are documented with OpenZeppelin-style block comments. Run <code>npm run docs</code> to regenerate this page and markdown under <code>docs/api/</code>.</p>
+        <pre class="code-block"><code>/**
+ * @title TemplateName
+ * @notice One-line user-facing description.
+ * @dev Technical details, constraints, caveats.
+ * @param n Description of template parameter.
+ * @custom:input name Description or type.
+ * @custom:output name Description or type.
+ * @custom:complexity Constraint count, big-O, or performance note.
+ * @custom:security Security considerations or caveats.
+ */</code></pre>
+      </section>
+
+      <section class="docs-section docs-reference" id="reference">
+        <h2>Circuit template reference</h2>
+        <p class="section-intro">Auto-generated from source. Use the sidebar search to filter by template name, signal, or file path.</p>
+        <p class="docs-no-results hidden" id="docs-no-results">No templates match your search.</p>
+        <section class="docs-category" id="cat-arithmetic">
+<h2>Arithmetic</h2>
+<p class="docs-category-intro">4 templates in this category.</p>
+<article class="template-doc" id="Sum-arithmetic-circom" data-search="sum sum of n field elements. arithmetic.circom n o(n) constraints (n-1 additions). none; pure arithmetic. constraint count o(n). use for bounded-size arrays. n length of the input array (&gt;= 1). in out">
+<h3 class="template-name"><code>Sum(n)</code></h3>
+<p class="template-notice">Sum of n field elements.</p>
+<p class="template-dev"><strong>Dev:</strong> Constraint count O(n). Use for bounded-size arrays.</p>
+<p class="template-meta"><strong>Complexity:</strong> O(n) constraints (n-1 additions).</p>
+<p class="template-meta template-security"><strong>Security:</strong> None; pure arithmetic.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Length of the input array (&gt;= 1).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — Sum of all elements.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/arithmetic.circom</code></p>
+</article>
+<article class="template-doc" id="InnerProduct-arithmetic-circom" data-search="innerproduct inner product (dot product) of two arrays of length n. arithmetic.circom n o(n) constraints (n multiplications + sum(n)). none; ensure inputs are range-checked elsewhere if needed. out = sum(a[i] * b[i]) for i in 0..n-1. constraint count o(n). n length of both arrays (&gt;= 1). a b out">
+<h3 class="template-name"><code>InnerProduct(n)</code></h3>
+<p class="template-notice">Inner product (dot product) of two arrays of length n.</p>
+<p class="template-dev"><strong>Dev:</strong> out = sum(a[i] * b[i]) for i in 0..n-1. Constraint count O(n).</p>
+<p class="template-meta"><strong>Complexity:</strong> O(n) constraints (n multiplications + Sum(n)).</p>
+<p class="template-meta template-security"><strong>Security:</strong> None; ensure inputs are range-checked elsewhere if needed.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Length of both arrays (&gt;= 1).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>a[n]</code></li><li><code>b[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — Dot product sum(a[i]*b[i]).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/arithmetic.circom</code></p>
+</article>
+<article class="template-doc" id="DivRem-arithmetic-circom" data-search="divrem safe division with remainder: constrains a = b*q + r with 0 &lt;= r &lt; b. arithmetic.circom n o(n): 5 strictnum2bits(n), 1 lessthan(n+1), 1 iszero; ~135 constraints for n=16. all of a, b, q, r are range-checked to n-bit. circuit checks a=b*q+r and 0&lt;=r&lt;b. prover supplies quotient q and remainder r; circuit checks equality and range. b must be nonzero; a, b, q, r are n-bit. use for integer division in zk. n bit width for all operands (&lt;= 251). a b q r quotient remainder">
+<h3 class="template-name"><code>DivRem(n)</code></h3>
+<p class="template-notice">Safe division with remainder: constrains a = b*q + r with 0 &lt;= r &lt; b.</p>
+<p class="template-dev"><strong>Dev:</strong> Prover supplies quotient q and remainder r; circuit checks equality and range. b must be nonzero; a, b, q, r are n-bit. Use for integer division in ZK.</p>
+<p class="template-meta"><strong>Complexity:</strong> O(n): 5 StrictNum2Bits(n), 1 LessThan(n+1), 1 IsZero; ~135 constraints for n=16.</p>
+<p class="template-meta template-security"><strong>Security:</strong> All of a, b, q, r are range-checked to n-bit. Circuit checks a=b*q+r and 0&lt;=r&lt;b.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width for all operands (&lt;= 251).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — Dividend.</li><li><code>b</code> — Divisor (nonzero).</li><li><code>q</code> — Quotient (prover-supplied).</li><li><code>r</code> — Remainder (prover-supplied).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>quotient</code> — Same as q (for wiring).</li><li><code>remainder</code> — Same as r (for wiring).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/arithmetic.circom</code></p>
+</article>
+<article class="template-doc" id="ExpByBits-arithmetic-circom" data-search="expbybits field exponentiation: out = base^exp with exponent given as n bits. arithmetic.circom n o(n): n binary checks + 4n constraints (square-and-multiply). ~14 constraints for n=4. field exponentiation only; for crypto (e.g. mod-exp) ensure exponent is properly bounded and base is in intended domain. square-and-multiply; exp[0] is msb (weight 2^(n-1)), exp[n-1] is lsb. each exp[i] constrained to 0 or 1. n number of exponent bits (exp in [0, 2^n - 1]). base exp out">
+<h3 class="template-name"><code>ExpByBits(n)</code></h3>
+<p class="template-notice">Field exponentiation: out = base^exp with exponent given as n bits.</p>
+<p class="template-dev"><strong>Dev:</strong> Square-and-multiply; exp[0] is MSB (weight 2^(n-1)), exp[n-1] is LSB. Each exp[i] constrained to 0 or 1.</p>
+<p class="template-meta"><strong>Complexity:</strong> O(n): n binary checks + 4n constraints (square-and-multiply). ~14 constraints for n=4.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Field exponentiation only; for crypto (e.g. mod-exp) ensure exponent is properly bounded and base is in intended domain.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of exponent bits (exp in [0, 2^n - 1]).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>base</code> — Base (field element).</li><li><code>exp[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — base^exp in the field.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/arithmetic.circom</code></p>
+</article>
+</section>
+
+<section class="docs-category" id="cat-comparators">
+<h2>Comparators &amp; range</h2>
+<p class="docs-category-intro">9 templates in this category.</p>
+<article class="template-doc" id="LessThan-comparators-circom" data-search="lessthan returns 1 if in[0] &lt; in[1], else 0. comparators.circom n num2bits(n+1): o(n) constraints. both inputs must be &lt; 2^n or result is undefined. enforce input bounds externally (e.g. strictnum2bits) when inputs are untrusted. both inputs must be in [0, 2^n). uses (2^n + in[0] - in[1]) bit decomposition. n bit width (&lt;= 252). in out">
+<h3 class="template-name"><code>LessThan(n)</code></h3>
+<p class="template-notice">Returns 1 if in[0] &lt; in[1], else 0.</p>
+<p class="template-dev"><strong>Dev:</strong> Both inputs must be in [0, 2^n). Uses (2^n + in[0] - in[1]) bit decomposition.</p>
+<p class="template-meta"><strong>Complexity:</strong> Num2Bits(n+1): O(n) constraints. Both inputs must be &lt; 2^n or result is undefined.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Enforce input bounds externally (e.g. StrictNum2Bits) when inputs are untrusted.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width (&lt;= 252).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in[2]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if in[0] &lt; in[1], 0 otherwise.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/comparators.circom</code></p>
+</article>
+<article class="template-doc" id="LessEqThan-comparators-circom" data-search="lesseqthan returns 1 if in[0] &lt;= in[1], else 0. comparators.circom n implemented as lessthan(in[0], in[1] + 1). n bit width. in out">
+<h3 class="template-name"><code>LessEqThan(n)</code></h3>
+<p class="template-notice">Returns 1 if in[0] &lt;= in[1], else 0.</p>
+<p class="template-dev"><strong>Dev:</strong> Implemented as LessThan(in[0], in[1] + 1).</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in[2]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if in[0] &lt;= in[1], 0 otherwise.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/comparators.circom</code></p>
+</article>
+<article class="template-doc" id="GreaterThan-comparators-circom" data-search="greaterthan returns 1 if in[0] &gt; in[1], else 0. comparators.circom n implemented as lessthan(in[1], in[0]). n bit width. in out">
+<h3 class="template-name"><code>GreaterThan(n)</code></h3>
+<p class="template-notice">Returns 1 if in[0] &gt; in[1], else 0.</p>
+<p class="template-dev"><strong>Dev:</strong> Implemented as LessThan(in[1], in[0]).</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in[2]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if in[0] &gt; in[1], 0 otherwise.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/comparators.circom</code></p>
+</article>
+<article class="template-doc" id="GreaterEqThan-comparators-circom" data-search="greatereqthan returns 1 if in[0] &gt;= in[1], else 0. comparators.circom n implemented as lessthan(in[1], in[0] + 1). n bit width. in out">
+<h3 class="template-name"><code>GreaterEqThan(n)</code></h3>
+<p class="template-notice">Returns 1 if in[0] &gt;= in[1], else 0.</p>
+<p class="template-dev"><strong>Dev:</strong> Implemented as LessThan(in[1], in[0] + 1).</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in[2]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if in[0] &gt;= in[1], 0 otherwise.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/comparators.circom</code></p>
+</article>
+<article class="template-doc" id="IsEqual-comparators-circom" data-search="isequal returns 1 if in[0] == in[1], else 0. comparators.circom uses iszero(in[1] - in[0]). in out">
+<h3 class="template-name"><code>IsEqual()</code></h3>
+<p class="template-notice">Returns 1 if in[0] == in[1], else 0.</p>
+<p class="template-dev"><strong>Dev:</strong> Uses IsZero(in[1] - in[0]).</p>
+<dt>Inputs</dt><dd><ul><li><code>in[2]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if equal, 0 otherwise.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/comparators.circom</code></p>
+</article>
+<article class="template-doc" id="ForceEqualIfEnabled-comparators-circom" data-search="forceequalifenabled if enabled is 1, constrains in[0] == in[1]; if 0, no constraint. comparators.circom enabled constrained binary; (1 - iszero(in[1]-in[0])) * enabled === 0. enabled in">
+<h3 class="template-name"><code>ForceEqualIfEnabled()</code></h3>
+<p class="template-notice">If enabled is 1, constrains in[0] == in[1]; if 0, no constraint.</p>
+<p class="template-dev"><strong>Dev:</strong> enabled constrained binary; (1 - IsZero(in[1]-in[0])) * enabled === 0.</p>
+<dt>Inputs</dt><dd><ul><li><code>enabled</code> — 0 or 1 (binary-constrained) to enable the equality check.</li><li><code>in[2]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><em>from template body</em></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/comparators.circom</code></p>
+</article>
+<article class="template-doc" id="AssertNotEqual-comparators-circom" data-search="assertnotequal constrains in[0] !== in[1] (aliasing-safe: two signals must differ). comparators.circom 1 iszero + 1 constraint; very cheap. use to prevent aliasing (e.g. path elements in merkle). fails if in[0]==in[1]. fails at constraint check if in[0] == in[1]. use to prevent equal values where distinctness is required. in">
+<h3 class="template-name"><code>AssertNotEqual()</code></h3>
+<p class="template-notice">Constrains in[0] !== in[1] (aliasing-safe: two signals must differ).</p>
+<p class="template-dev"><strong>Dev:</strong> Fails at constraint check if in[0] == in[1]. Use to prevent equal values where distinctness is required.</p>
+<p class="template-meta"><strong>Complexity:</strong> 1 IsZero + 1 constraint; very cheap.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Use to prevent aliasing (e.g. path elements in Merkle). Fails if in[0]==in[1].</p>
+<dt>Inputs</dt><dd><ul><li><code>in[2]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><em>from template body</em></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/comparators.circom</code></p>
+</article>
+<article class="template-doc" id="StrictNum2Bits-comparators-circom" data-search="strictnum2bits bit decomposition with strict range: in must be in [0, 2^n - 1]. comparators.circom n num2bits(n) + lessthan(n+1): o(n). ~17 constraints for n=8. ensures in is a true n-bit integer; use before range-sensitive operations. same as num2bits(n) plus constraint in &lt; 2^n so the value is a true n-bit non-negative integer (no field overflow). n number of bits (&lt;= 251). in out">
+<h3 class="template-name"><code>StrictNum2Bits(n)</code></h3>
+<p class="template-notice">Bit decomposition with strict range: in must be in [0, 2^n - 1].</p>
+<p class="template-dev"><strong>Dev:</strong> Same as Num2Bits(n) plus constraint in &lt; 2^n so the value is a true n-bit non-negative integer (no field overflow).</p>
+<p class="template-meta"><strong>Complexity:</strong> Num2Bits(n) + LessThan(n+1): O(n). ~17 constraints for n=8.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Ensures in is a true n-bit integer; use before range-sensitive operations.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of bits (&lt;= 251).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in</code> — Field element to decompose.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/comparators.circom</code></p>
+</article>
+<article class="template-doc" id="RangeProof-comparators-circom" data-search="rangeproof proves that x is in the range [a, b] (inclusive), all n-bit. comparators.circom n 2 strictnum2bits(n) + lesseqthan(n): o(n). use n large enough that 2^n &gt; b - a. all of x, a, b can be private; ensure n is chosen so the range is correct (no overflow). constrains (x - a) and (b - x) to be n-bit and x - a &lt;= b - a. use n large enough so 2^n &gt; b - a. n bit width for range (&lt;= 251). x a b out">
+<h3 class="template-name"><code>RangeProof(n)</code></h3>
+<p class="template-notice">Proves that x is in the range [a, b] (inclusive), all n-bit.</p>
+<p class="template-dev"><strong>Dev:</strong> Constrains (x - a) and (b - x) to be n-bit and x - a &lt;= b - a. Use n large enough so 2^n &gt; b - a.</p>
+<p class="template-meta"><strong>Complexity:</strong> 2 StrictNum2Bits(n) + LessEqThan(n): O(n). Use n large enough that 2^n &gt; b - a.</p>
+<p class="template-meta template-security"><strong>Security:</strong> All of x, a, b can be private; ensure n is chosen so the range is correct (no overflow).</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width for range (&lt;= 251).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>x</code> — Value to prove in range.</li><li><code>a</code> — Lower bound (inclusive).</li><li><code>b</code> — Upper bound (inclusive).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 (convenience).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/comparators.circom</code></p>
+</article>
+</section>
+
+<section class="docs-category" id="cat-bitify">
+<h2>Bitify</h2>
+<p class="docs-category-intro">4 templates in this category.</p>
+<article class="template-doc" id="Num2Bits-bitify-circom" data-search="num2bits decomposes a field element into n bits (out[0] = lsb). bitify.circom n o(n): n binary constraints + 1 linear combo. no upper bound on in; use strictnum2bits when in must be in [0,2^n-1]. if in &gt;= 2^n, decomposition is mod field; can break range assumptions. use strictnum2bits for untrusted inputs. enforces in === sum(out[i]*2^i) and each out[i] in {0,1}. use n small enough for the field modulus. n number of bits. in out">
+<h3 class="template-name"><code>Num2Bits(n)</code></h3>
+<p class="template-notice">Decomposes a field element into n bits (out[0] = LSB).</p>
+<p class="template-dev"><strong>Dev:</strong> Enforces in === sum(out[i]*2^i) and each out[i] in {0,1}. Use n small enough for the field modulus.</p>
+<p class="template-meta"><strong>Complexity:</strong> O(n): n binary constraints + 1 linear combo. No upper bound on in; use StrictNum2Bits when in must be in [0,2^n-1].</p>
+<p class="template-meta template-security"><strong>Security:</strong> If in &gt;= 2^n, decomposition is mod field; can break range assumptions. Use StrictNum2Bits for untrusted inputs.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of bits.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in</code> — Field element to decompose.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/bitify.circom</code></p>
+</article>
+<article class="template-doc" id="Bits2Num-bitify-circom" data-search="bits2num recomposes n bits into a single field element. bitify.circom n out = sum(in[i]*2^i). no binary check on in[i]; use with num2bits or constrain inputs elsewhere. n number of bits. in out">
+<h3 class="template-name"><code>Bits2Num(n)</code></h3>
+<p class="template-notice">Recomposes n bits into a single field element.</p>
+<p class="template-dev"><strong>Dev:</strong> out = sum(in[i]*2^i). No binary check on in[i]; use with Num2Bits or constrain inputs elsewhere.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of bits.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — Field element.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/bitify.circom</code></p>
+</article>
+<article class="template-doc" id="Num2BitsNeg-bitify-circom" data-search="num2bitsneg bit decomposition of the negation (2^n - in) for n-bit in, or zero if in == 0. bitify.circom n used in some range-check patterns. in can be 0; then output is (2^n - 0) in n bits. n number of bits. in out">
+<h3 class="template-name"><code>Num2BitsNeg(n)</code></h3>
+<p class="template-notice">Bit decomposition of the negation (2^n - in) for n-bit in, or zero if in == 0.</p>
+<p class="template-dev"><strong>Dev:</strong> Used in some range-check patterns. in can be 0; then output is (2^n - 0) in n bits.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of bits.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in</code> — Field element.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/bitify.circom</code></p>
+</article>
+<article class="template-doc" id="IsZero-bitify-circom" data-search="iszero returns 1 if in == 0, else 0. bitify.circom 2 constraints (inverse + product). constant cost. uses non-deterministic inverse; safe in r1cs. do not use to compare against a secret without care (timing/aux inputs). uses inverse: out = 1 - in * inv with in * out === 0. no range assumption on in. in out">
+<h3 class="template-name"><code>IsZero()</code></h3>
+<p class="template-notice">Returns 1 if in == 0, else 0.</p>
+<p class="template-dev"><strong>Dev:</strong> Uses inverse: out = 1 - in * inv with in * out === 0. No range assumption on in.</p>
+<p class="template-meta"><strong>Complexity:</strong> 2 constraints (inverse + product). Constant cost.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Uses non-deterministic inverse; safe in R1CS. Do not use to compare against a secret without care (timing/aux inputs).</p>
+<dt>Inputs</dt><dd><ul><li><code>in</code> — Field element.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if in == 0, 0 otherwise.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/bitify.circom</code></p>
+</article>
+</section>
+
+<section class="docs-category" id="cat-gates">
+<h2>Gates</h2>
+<p class="docs-category-intro">7 templates in this category.</p>
+<article class="template-doc" id="XOR-gates-circom" data-search="xor boolean xor: out = 1 iff exactly one of a, b is 1. gates.circom 1 constraint. inputs must be 0 or 1 (enforce with bitify or range checks). no security caveats; use with binary-constrained inputs. inputs must be 0 or 1; use with bitify for range checks. one constraint. a b out">
+<h3 class="template-name"><code>XOR()</code></h3>
+<p class="template-notice">Boolean XOR: out = 1 iff exactly one of a, b is 1.</p>
+<p class="template-dev"><strong>Dev:</strong> Inputs must be 0 or 1; use with bitify for range checks. One constraint.</p>
+<p class="template-meta"><strong>Complexity:</strong> 1 constraint. Inputs must be 0 or 1 (enforce with bitify or range checks).</p>
+<p class="template-meta template-security"><strong>Security:</strong> No security caveats; use with binary-constrained inputs.</p>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit.</li><li><code>b</code> — Second bit.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — a XOR b.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/gates.circom</code></p>
+</article>
+<article class="template-doc" id="AND-gates-circom" data-search="and boolean and: out = a * b. gates.circom inputs 0 or 1. one constraint. a b out">
+<h3 class="template-name"><code>AND()</code></h3>
+<p class="template-notice">Boolean AND: out = a * b.</p>
+<p class="template-dev"><strong>Dev:</strong> Inputs 0 or 1. One constraint.</p>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit.</li><li><code>b</code> — Second bit.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — a AND b.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/gates.circom</code></p>
+</article>
+<article class="template-doc" id="OR-gates-circom" data-search="or boolean or: out = 1 iff at least one of a, b is 1. gates.circom out = a + b - a*b. one constraint. a b out">
+<h3 class="template-name"><code>OR()</code></h3>
+<p class="template-notice">Boolean OR: out = 1 iff at least one of a, b is 1.</p>
+<p class="template-dev"><strong>Dev:</strong> out = a + b - a*b. One constraint.</p>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit.</li><li><code>b</code> — Second bit.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — a OR b.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/gates.circom</code></p>
+</article>
+<article class="template-doc" id="NOT-gates-circom" data-search="not boolean not: out = 1 - in. gates.circom in must be 0 or 1. one constraint. in out">
+<h3 class="template-name"><code>NOT()</code></h3>
+<p class="template-notice">Boolean NOT: out = 1 - in.</p>
+<p class="template-dev"><strong>Dev:</strong> in must be 0 or 1. One constraint.</p>
+<dt>Inputs</dt><dd><ul><li><code>in</code> — Input bit.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if in == 0, 0 if in == 1.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/gates.circom</code></p>
+</article>
+<article class="template-doc" id="NAND-gates-circom" data-search="nand boolean nand: out = 1 - a*b. gates.circom a b out">
+<h3 class="template-name"><code>NAND()</code></h3>
+<p class="template-notice">Boolean NAND: out = 1 - a*b.</p>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit.</li><li><code>b</code> — Second bit.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — NOT(a AND b).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/gates.circom</code></p>
+</article>
+<article class="template-doc" id="NOR-gates-circom" data-search="nor boolean nor: out = 1 iff both a and b are 0. gates.circom a b out">
+<h3 class="template-name"><code>NOR()</code></h3>
+<p class="template-notice">Boolean NOR: out = 1 iff both a and b are 0.</p>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit.</li><li><code>b</code> — Second bit.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — NOT(a OR b).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/gates.circom</code></p>
+</article>
+<article class="template-doc" id="MultiAND-gates-circom" data-search="multiand n-way and: out = 1 iff all in[i] are 1. gates.circom n o(n) constraints (recursive and tree). inputs must be binary. none; combine with isequal/oneofn for set checks. recursive structure; constraint count o(n). inputs must be 0 or 1. n number of inputs. in out">
+<h3 class="template-name"><code>MultiAND(n)</code></h3>
+<p class="template-notice">N-way AND: out = 1 iff all in[i] are 1.</p>
+<p class="template-dev"><strong>Dev:</strong> Recursive structure; constraint count O(n). Inputs must be 0 or 1.</p>
+<p class="template-meta"><strong>Complexity:</strong> O(n) constraints (recursive AND tree). Inputs must be binary.</p>
+<p class="template-meta template-security"><strong>Security:</strong> None; combine with IsEqual/OneOfN for set checks.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of inputs.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 iff all in[i] == 1.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/gates.circom</code></p>
+</article>
+</section>
+
+<section class="docs-category" id="cat-mux">
+<h2>Mux &amp; select</h2>
+<p class="docs-category-intro">6 templates in this category.</p>
+<article class="template-doc" id="MultiMux1-mux1-circom" data-search="multimux1 2-to-1 multiplexer for n parallel signals: out[i] = c[i][1] if s else c[i][0]. mux1.circom n out[i] = (c[i][1] - c[i][0])*s + c[i][0]. one constraint per output. n number of parallel channels. c s out">
+<h3 class="template-name"><code>MultiMux1(n)</code></h3>
+<p class="template-notice">2-to-1 multiplexer for n parallel signals: out[i] = c[i][1] if s else c[i][0].</p>
+<p class="template-dev"><strong>Dev:</strong> out[i] = (c[i][1] - c[i][0])*s + c[i][0]. One constraint per output.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of parallel channels.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>c[n]</code></li><li><code>s</code> — Selector (0 or 1).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/mux1.circom</code></p>
+</article>
+<article class="template-doc" id="Mux1-mux1-circom" data-search="mux1 single 2-to-1 multiplexer: out = c[1] if s else c[0]. mux1.circom wrapper of multimux1(1). c s out">
+<h3 class="template-name"><code>Mux1()</code></h3>
+<p class="template-notice">Single 2-to-1 multiplexer: out = c[1] if s else c[0].</p>
+<p class="template-dev"><strong>Dev:</strong> Wrapper of MultiMux1(1).</p>
+<dt>Inputs</dt><dd><ul><li><code>c[2]</code></li><li><code>s</code> — Selector (0 or 1).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — Selected value.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/mux1.circom</code></p>
+</article>
+<article class="template-doc" id="MultiMux2-mux2-circom" data-search="multimux2 4-to-1 multiplexer for n parallel signals; selector s[2] (2 bits). mux2.circom n out[i] = c[i][s[0] + 2*s[1]]. constraint count o(n). n number of parallel channels. c s out">
+<h3 class="template-name"><code>MultiMux2(n)</code></h3>
+<p class="template-notice">4-to-1 multiplexer for n parallel signals; selector s[2] (2 bits).</p>
+<p class="template-dev"><strong>Dev:</strong> out[i] = c[i][s[0] + 2*s[1]]. Constraint count O(n).</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of parallel channels.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>c[n]</code></li><li><code>s[2]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/mux2.circom</code></p>
+</article>
+<article class="template-doc" id="Mux2-mux2-circom" data-search="mux2 single 4-to-1 multiplexer: out = c[s[0] + 2*s[1]]. mux2.circom wrapper of multimux2(1). c s out">
+<h3 class="template-name"><code>Mux2()</code></h3>
+<p class="template-notice">Single 4-to-1 multiplexer: out = c[s[0] + 2*s[1]].</p>
+<p class="template-dev"><strong>Dev:</strong> Wrapper of MultiMux2(1).</p>
+<dt>Inputs</dt><dd><ul><li><code>c[4]</code></li><li><code>s[2]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — Selected value.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/mux2.circom</code></p>
+</article>
+<article class="template-doc" id="SelectByIndex-muxn-circom" data-search="selectbyindex selects one of n inputs by index; out = inputs[index]. muxn.circom n, nbits o(n): strictnum2bits(nbits), lessthan(nbits+1), n×isequal, sum(n). ~46 constraints for n=4,nbits=2. index is range-checked; ensures correct selection. no overflow if inputs are field elements. index is constrained to [0, n-1] via strictnum2bits and lessthan. nbits must satisfy 2^nbits &gt;= n (e.g. n=5 =&gt; nbits=3). n number of inputs. nbits bit width for index (2^nbits &gt;= n). inputs index out">
+<h3 class="template-name"><code>SelectByIndex(N, nBits)</code></h3>
+<p class="template-notice">Selects one of N inputs by index; out = inputs[index].</p>
+<p class="template-dev"><strong>Dev:</strong> Index is constrained to [0, N-1] via StrictNum2Bits and LessThan. nBits must satisfy 2^nBits &gt;= N (e.g. N=5 =&gt; nBits=3).</p>
+<p class="template-meta"><strong>Complexity:</strong> O(N): StrictNum2Bits(nBits), LessThan(nBits+1), N×IsEqual, Sum(N). ~46 constraints for N=4,nBits=2.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Index is range-checked; ensures correct selection. No overflow if inputs are field elements.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>N</code> — Number of inputs.</li><li><code>nBits</code> — Bit width for index (2^nBits &gt;= N).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>inputs[N]</code></li><li><code>index</code> — Selector in [0, N-1].</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — inputs[index].</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/muxn.circom</code></p>
+</article>
+<article class="template-doc" id="Switcher-switcher-circom" data-search="switcher conditional swap: if sel==0 then (outl, outr)=(l, r); if sel==1 then (outl, outr)=(r, l). switcher.circom 3 constraints (1 binary + 2 swap). sel is constrained to {0, 1} within the template. used in merkle path hashing to place sibling on correct side. two constraints. sel l r outl outr">
+<h3 class="template-name"><code>Switcher()</code></h3>
+<p class="template-notice">Conditional swap: if sel==0 then (outL, outR)=(L, R); if sel==1 then (outL, outR)=(R, L).</p>
+<p class="template-dev"><strong>Dev:</strong> Used in Merkle path hashing to place sibling on correct side. Two constraints.</p>
+<p class="template-meta"><strong>Complexity:</strong> 3 constraints (1 binary + 2 swap).</p>
+<p class="template-meta template-security"><strong>Security:</strong> sel is constrained to {0, 1} within the template.</p>
+<dt>Inputs</dt><dd><ul><li><code>sel</code> — Selector (0 or 1).</li><li><code>L</code> — Left value.</li><li><code>R</code> — Right value.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>outL</code> — L or R according to sel.</li><li><code>outR</code> — R or L according to sel.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/switcher.circom</code></p>
+</article>
+</section>
+
+<section class="docs-category" id="cat-utils">
+<h2>Utils</h2>
+<p class="docs-category-intro">15 templates in this category.</p>
+<article class="template-doc" id="PadBits-utils-circom" data-search="padbits zero-pads a bit array to a target length. utils.circom n, target n binary constraints + (target-n) zero assignments. o(target). input bits must be constrained 0/1; pad region is fixed zeros. out[i] = in[i] for i &lt; n, out[i] = 0 for i &gt;= n. input bits are constrained to 0 or 1. n current length of input. target output length (&gt;= n). in out">
+<h3 class="template-name"><code>PadBits(n, target)</code></h3>
+<p class="template-notice">Zero-pads a bit array to a target length.</p>
+<p class="template-dev"><strong>Dev:</strong> out[i] = in[i] for i &lt; n, out[i] = 0 for i &gt;= n. Input bits are constrained to 0 or 1.</p>
+<p class="template-meta"><strong>Complexity:</strong> n binary constraints + (target-n) zero assignments. O(target).</p>
+<p class="template-meta template-security"><strong>Security:</strong> Input bits must be constrained 0/1; pad region is fixed zeros.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Current length of input.</li><li><code>target</code> — Output length (&gt;= n).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[target]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="OneOfN-utils-circom" data-search="oneofn returns 1 if value equals arr[i] for some i, otherwise 0 (array contains check). utils.circom n o(n): n×isequal, n×not, multiand(n). use for small allowlists. does not reveal index; suitable for membership proof. for large sets consider merkle allowlist. uses isequal per element and 1 - multiand(1-eq[i]). constraint count o(n). n array length (&gt;= 1). arr value out">
+<h3 class="template-name"><code>OneOfN(n)</code></h3>
+<p class="template-notice">Returns 1 if value equals arr[i] for some i, otherwise 0 (array contains check).</p>
+<p class="template-dev"><strong>Dev:</strong> Uses IsEqual per element and 1 - MultiAND(1-eq[i]). Constraint count O(n).</p>
+<p class="template-meta"><strong>Complexity:</strong> O(n): n×IsEqual, n×NOT, MultiAND(n). Use for small allowlists.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Does not reveal index; suitable for membership proof. For large sets consider Merkle allowlist.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Array length (&gt;= 1).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>arr[n]</code></li><li><code>value</code> — Value to look for.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if value in arr, 0 otherwise.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="IndexOf-utils-circom" data-search="indexof proves knowledge of an index i in [0, n-1] such that arr[i] == value; outputs that index. utils.circom n, nbits same as selectbyindex(n, nbits) plus one isequal. o(n). index is range-checked by selectbyindex. use when proving &quot;value appears at position i&quot; without revealing i elsewhere. uses selectbyindex to constrain arr[index]==value. nbits must satisfy 2^nbits &gt;= n. n array length (&gt;= 1). nbits bit width for index (2^nbits &gt;= n). arr value index out">
+<h3 class="template-name"><code>IndexOf(N, nBits)</code></h3>
+<p class="template-notice">Proves knowledge of an index i in [0, N-1] such that arr[i] == value; outputs that index.</p>
+<p class="template-dev"><strong>Dev:</strong> Uses SelectByIndex to constrain arr[index]==value. nBits must satisfy 2^nBits &gt;= N.</p>
+<p class="template-meta"><strong>Complexity:</strong> Same as SelectByIndex(N, nBits) plus one IsEqual. O(N).</p>
+<p class="template-meta template-security"><strong>Security:</strong> Index is range-checked by SelectByIndex. Use when proving &quot;value appears at position i&quot; without revealing i elsewhere.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>N</code> — Array length (&gt;= 1).</li><li><code>nBits</code> — Bit width for index (2^nBits &gt;= N).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>arr[N]</code></li><li><code>value</code> — Value that must equal arr[index].</li><li><code>index</code> — Private index in [0, N-1].</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — The index (prover can make it public or keep private in higher-level circuit).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="Min2-utils-circom" data-search="min2 outputs the minimum of two values (both assumed in [0, 2^n - 1]). utils.circom n uses lessthan(n) and selectbyindex(2,1). out = a when a &lt; b, else b. n bit width for comparison. a b out">
+<h3 class="template-name"><code>Min2(n)</code></h3>
+<p class="template-notice">Outputs the minimum of two values (both assumed in [0, 2^n - 1]).</p>
+<p class="template-dev"><strong>Dev:</strong> Uses LessThan(n) and SelectByIndex(2,1). out = a when a &lt; b, else b.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width for comparison.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First value.</li><li><code>b</code> — Second value.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — min(a, b).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="Max2-utils-circom" data-search="max2 outputs the maximum of two values (both assumed in [0, 2^n - 1]). utils.circom n uses lessthan(n) and selectbyindex(2,1). out = b when a &lt; b, else a. n bit width for comparison. a b out">
+<h3 class="template-name"><code>Max2(n)</code></h3>
+<p class="template-notice">Outputs the maximum of two values (both assumed in [0, 2^n - 1]).</p>
+<p class="template-dev"><strong>Dev:</strong> Uses LessThan(n) and SelectByIndex(2,1). out = b when a &lt; b, else a.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width for comparison.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First value.</li><li><code>b</code> — Second value.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — max(a, b).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="AllEqual-utils-circom" data-search="allequal returns 1 if all array elements are equal, else 0. utils.circom n for n&gt;=2: arr[i]==arr[0] for all i, combined with multiand. for n==1, outputs 1. n array length (&gt;= 1). arr out">
+<h3 class="template-name"><code>AllEqual(n)</code></h3>
+<p class="template-notice">Returns 1 if all array elements are equal, else 0.</p>
+<p class="template-dev"><strong>Dev:</strong> For n&gt;=2: arr[i]==arr[0] for all i, combined with MultiAND. For n==1, outputs 1.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Array length (&gt;= 1).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>arr[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if all equal, 0 otherwise.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="CountMatches-utils-circom" data-search="countmatches counts how many indices i have arr[i] == value (output in [0, n]). utils.circom n sum of isequal(arr[i], value). useful for tally or allowlist count. n array length (&gt;= 1). arr value out">
+<h3 class="template-name"><code>CountMatches(N)</code></h3>
+<p class="template-notice">Counts how many indices i have arr[i] == value (output in [0, N]).</p>
+<p class="template-dev"><strong>Dev:</strong> Sum of IsEqual(arr[i], value). Useful for tally or allowlist count.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>N</code> — Array length (&gt;= 1).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>arr[N]</code></li><li><code>value</code> — Value to count.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — Number of i with arr[i] == value.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="MinN-utils-circom" data-search="minn outputs the minimum of n values (each in [0, 2^n - 1]). utils.circom n, n chains min2(n) over the array. o(n) constraints. n bit width for each value. n array length (&gt;= 1). arr out">
+<h3 class="template-name"><code>MinN(n, N)</code></h3>
+<p class="template-notice">Outputs the minimum of N values (each in [0, 2^n - 1]).</p>
+<p class="template-dev"><strong>Dev:</strong> Chains Min2(n) over the array. O(N) constraints.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width for each value.</li><li><code>N</code> — Array length (&gt;= 1).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>arr[N]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — min(arr[0], ..., arr[N-1]).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="MaxN-utils-circom" data-search="maxn outputs the maximum of n values (each in [0, 2^n - 1]). utils.circom n, n chains max2(n) over the array. o(n) constraints. n bit width for each value. n array length (&gt;= 1). arr out">
+<h3 class="template-name"><code>MaxN(n, N)</code></h3>
+<p class="template-notice">Outputs the maximum of N values (each in [0, 2^n - 1]).</p>
+<p class="template-dev"><strong>Dev:</strong> Chains Max2(n) over the array. O(N) constraints.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width for each value.</li><li><code>N</code> — Array length (&gt;= 1).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>arr[N]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — max(arr[0], ..., arr[N-1]).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="Tally-utils-circom" data-search="tally counts votes per choice: count[c] = number of votes equal to c (votes constrained to [0, numchoices-1]). utils.circom numchoices, numvotes each vote is range-checked (strictnum2bits + lesseqthan); then countmatches per choice. use for anonymous tally. numchoices number of choices (&gt;= 1). nbits = ceil(log2(numchoices)). numvotes number of votes (&gt;= 1). votes count">
+<h3 class="template-name"><code>Tally(numChoices, numVotes)</code></h3>
+<p class="template-notice">Counts votes per choice: count[c] = number of votes equal to c (votes constrained to [0, numChoices-1]).</p>
+<p class="template-dev"><strong>Dev:</strong> Each vote is range-checked (StrictNum2Bits + LessEqThan); then CountMatches per choice. Use for anonymous tally.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>numChoices</code> — Number of choices (&gt;= 1). nBits = ceil(log2(numChoices)).</li><li><code>numVotes</code> — Number of votes (&gt;= 1).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>votes[numVotes]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>count[numChoices]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="PadBits10Star-utils-circom" data-search="padbits10star pads a bit array with 1 then zeros to total length (common in hash padding). utils.circom n, totalbits out[0..n-1]=in, out[n]=1, out[n+1..totalbits-1]=0. totalbits &gt;= n+1. n input bit length. totalbits output length. in out">
+<h3 class="template-name"><code>PadBits10Star(n, totalBits)</code></h3>
+<p class="template-notice">Pads a bit array with 1 then zeros to total length (common in hash padding).</p>
+<p class="template-dev"><strong>Dev:</strong> out[0..n-1]=in, out[n]=1, out[n+1..totalBits-1]=0. totalBits &gt;= n+1.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Input bit length.</li><li><code>totalBits</code> — Output length.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>in[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[totalBits]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="ConditionalSelect-utils-circom" data-search="conditionalselect outputs a if condition=1, else b (condition must be 0 or 1). utils.circom uses selectbyindex(2,1). useful for private if-then-else. condition a b out">
+<h3 class="template-name"><code>ConditionalSelect()</code></h3>
+<p class="template-notice">Outputs a if condition=1, else b (condition must be 0 or 1).</p>
+<p class="template-dev"><strong>Dev:</strong> Uses SelectByIndex(2,1). Useful for private if-then-else.</p>
+<dt>Inputs</dt><dd><ul><li><code>condition</code></li><li><code>a</code></li><li><code>b</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="BalanceProof-utils-circom" data-search="balanceproof proves balance &gt;= amount and newbalance = balance - amount (all n-bit non-negative). utils.circom n use in contracts: verify proof then execute transfer (deduct amount). n bit width for amounts. balance amount newbalance">
+<h3 class="template-name"><code>BalanceProof(n)</code></h3>
+<p class="template-notice">Proves balance &gt;= amount and newBalance = balance - amount (all n-bit non-negative).</p>
+<p class="template-dev"><strong>Dev:</strong> Use in contracts: verify proof then execute transfer (deduct amount).</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width for amounts.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>balance</code></li><li><code>amount</code></li><li><code>newBalance</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><em>from template body</em></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="VoteInAllowlist-utils-circom" data-search="voteinallowlist returns 1 if vote equals one of allowedchoices (for allowlist-style voting). utils.circom n same as oneofn(n); name clarifies voting use. combine with tally in contracts. vote allowedchoices out">
+<h3 class="template-name"><code>VoteInAllowlist(n)</code></h3>
+<p class="template-notice">Returns 1 if vote equals one of allowedChoices (for allowlist-style voting).</p>
+<p class="template-dev"><strong>Dev:</strong> Same as OneOfN(n); name clarifies voting use. Combine with tally in contracts.</p>
+<dt>Inputs</dt><dd><ul><li><code>vote</code></li><li><code>allowedChoices[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+<article class="template-doc" id="PadPKCS7-utils-circom" data-search="padpkcs7 pkcs#7-style padding: constrains block so bytes from index numused to end equal (blockbytes - numused). utils.circom blockbytes blockbytes * (strictnum2bits(8) + lesseqthan(nbits) + 1) + range check on numused. useful for hashing/symmetric crypto in-circuit. prover supplies full block; circuit enforces padding. blockbytes block size in bytes (e.g. 8, 16). blockbytes &lt;= 255. block numused">
+<h3 class="template-name"><code>PadPKCS7(blockBytes)</code></h3>
+<p class="template-notice">PKCS#7-style padding: constrains block so bytes from index numUsed to end equal (blockBytes - numUsed).</p>
+<p class="template-dev"><strong>Dev:</strong> Useful for hashing/symmetric crypto in-circuit. Prover supplies full block; circuit enforces padding.</p>
+<p class="template-meta"><strong>Complexity:</strong> blockBytes * (StrictNum2Bits(8) + LessEqThan(nBits) + 1) + range check on numUsed.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>blockBytes</code> — Block size in bytes (e.g. 8, 16). blockBytes &lt;= 255.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>block[blockBytes]</code></li><li><code>numUsed</code> — Number of message bytes at start (0..blockBytes-1). At least 1 pad byte is always required (standard PKCS#7).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><em>from template body</em></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/utils.circom</code></p>
+</article>
+</section>
+
+<section class="docs-category" id="cat-string_data">
+<h2>String &amp; data</h2>
+<p class="docs-category-intro">5 templates in this category.</p>
+<article class="template-doc" id="ByteInRange-string_data-circom" data-search="byteinrange outputs 1 if byte is in [lo, hi] (inclusive), else 0. both lo and hi are constants; byte is input. string_data.circom lo, hi uses lesseqthan(8). use for utf-8 or simple pattern checks. lo lower bound (constant, 0-255). hi upper bound (constant, 0-255), lo &lt;= hi. byte out">
+<h3 class="template-name"><code>ByteInRange(lo, hi)</code></h3>
+<p class="template-notice">Outputs 1 if byte is in [lo, hi] (inclusive), else 0. Both lo and hi are constants; byte is input.</p>
+<p class="template-dev"><strong>Dev:</strong> Uses LessEqThan(8). Use for UTF-8 or simple pattern checks.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>lo</code> — Lower bound (constant, 0-255).</li><li><code>hi</code> — Upper bound (constant, 0-255), lo &lt;= hi.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>byte</code> — Single byte (0-255; constrain with StrictNum2Bits(8) elsewhere if untrusted).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if lo &lt;= byte &lt;= hi, 0 otherwise.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/string_data.circom</code></p>
+</article>
+<article class="template-doc" id="FixedStringMatch-string_data-circom" data-search="fixedstringmatch outputs 1 if bytes[i] == expected[i] for all i (fixed string equality). string_data.circom n simple regex-like &quot;exact match&quot;. uses n×isequal + multiand(n). n length of byte arrays. bytes expected out">
+<h3 class="template-name"><code>FixedStringMatch(n)</code></h3>
+<p class="template-notice">Outputs 1 if bytes[i] == expected[i] for all i (fixed string equality).</p>
+<p class="template-dev"><strong>Dev:</strong> Simple regex-like &quot;exact match&quot;. Uses n×IsEqual + MultiAND(n).</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Length of byte arrays.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>bytes[n]</code></li><li><code>expected[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if bytes equals expected, 0 otherwise.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/string_data.circom</code></p>
+</article>
+<article class="template-doc" id="BytesAllInRange-string_data-circom" data-search="bytesallinrange outputs 1 if every bytes[i] is in [lo, hi]. simple pattern: e.g. alphanumeric range. string_data.circom n, lo, hi n number of bytes. lo lower bound constant (0-255). hi upper bound constant (0-255). bytes out">
+<h3 class="template-name"><code>BytesAllInRange(n, lo, hi)</code></h3>
+<p class="template-notice">Outputs 1 if every bytes[i] is in [lo, hi]. Simple pattern: e.g. alphanumeric range.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of bytes.</li><li><code>lo</code> — Lower bound constant (0-255).</li><li><code>hi</code> — Upper bound constant (0-255).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>bytes[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if all bytes in [lo, hi], 0 otherwise.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/string_data.circom</code></p>
+</article>
+<article class="template-doc" id="Utf8ByteTransition-string_data-circom" data-search="utf8bytetransition one step of utf-8 validation: (state_in, byte) -&gt; state_out. state 0 = at boundary, 1..3 = expecting that many continuation bytes. simplified (no overlong check). string_data.circom internal; use utf8validation(n). state_in byte state_out">
+<h3 class="template-name"><code>Utf8ByteTransition()</code></h3>
+<p class="template-notice">One step of UTF-8 validation: (state_in, byte) -&gt; state_out. state 0 = at boundary, 1..3 = expecting that many continuation bytes. Simplified (no overlong check).</p>
+<p class="template-dev"><strong>Dev:</strong> Internal; use Utf8Validation(n).</p>
+<dt>Inputs</dt><dd><ul><li><code>state_in</code></li><li><code>byte</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>state_out</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/string_data.circom</code></p>
+</article>
+<article class="template-doc" id="Utf8Validation-string_data-circom" data-search="utf8validation constrains bytes[0..n-1] to be valid utf-8. simplified: no overlong encoding check; rejects invalid lead/continuation sequences. string_data.circom n n×strictnum2bits(8) + n×utf8bytetransition + state chain. o(n). use for proving a string is valid utf-8 without revealing it. simplified validator; overlong encodings are accepted. each byte is range-checked 0-255; state machine enforces lead bytes (ascii, 2/3/4-byte) and continuation bytes (0x80-0xbf). final state must be 0. n number of bytes. bytes">
+<h3 class="template-name"><code>Utf8Validation(n)</code></h3>
+<p class="template-notice">Constrains bytes[0..n-1] to be valid UTF-8. Simplified: no overlong encoding check; rejects invalid lead/continuation sequences.</p>
+<p class="template-dev"><strong>Dev:</strong> Each byte is range-checked 0-255; state machine enforces lead bytes (ASCII, 2/3/4-byte) and continuation bytes (0x80-0xBF). Final state must be 0.</p>
+<p class="template-meta"><strong>Complexity:</strong> n×StrictNum2Bits(8) + n×Utf8ByteTransition + state chain. O(n).</p>
+<p class="template-meta template-security"><strong>Security:</strong> Use for proving a string is valid UTF-8 without revealing it. Simplified validator; overlong encodings are accepted.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of bytes.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>bytes[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><em>from template body</em></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/string_data.circom</code></p>
+</article>
+</section>
+
+<section class="docs-category" id="cat-hashing">
+<h2>Hashing</h2>
+<p class="docs-category-intro">23 templates in this category.</p>
+<article class="template-doc" id="MiMC7-hashing-mimc-circom" data-search="mimc7 hashing/mimc.circom nrounds x_in k out">
+<h3 class="template-name"><code>MiMC7(nrounds)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>x_in</code></li><li><code>k</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/mimc.circom</code></p>
+</article>
+<article class="template-doc" id="MultiMiMC7-hashing-mimc-circom" data-search="multimimc7 hashing/mimc.circom ninputs, nrounds in k out">
+<h3 class="template-name"><code>MultiMiMC7(nInputs, nRounds)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[nInputs]</code></li><li><code>k</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/mimc.circom</code></p>
+</article>
+<article class="template-doc" id="Sigma-hashing-poseidon-circom" data-search="sigma hashing/poseidon.circom in out">
+<h3 class="template-name"><code>Sigma()</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/poseidon.circom</code></p>
+</article>
+<article class="template-doc" id="Ark-hashing-poseidon-circom" data-search="ark hashing/poseidon.circom t, c, r in out">
+<h3 class="template-name"><code>Ark(t, C, r)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[t]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[t]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/poseidon.circom</code></p>
+</article>
+<article class="template-doc" id="Mix-hashing-poseidon-circom" data-search="mix hashing/poseidon.circom t, m in out">
+<h3 class="template-name"><code>Mix(t, M)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[t]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[t]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/poseidon.circom</code></p>
+</article>
+<article class="template-doc" id="MixLast-hashing-poseidon-circom" data-search="mixlast hashing/poseidon.circom t, m, s in out">
+<h3 class="template-name"><code>MixLast(t, M, s)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[t]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/poseidon.circom</code></p>
+</article>
+<article class="template-doc" id="MixS-hashing-poseidon-circom" data-search="mixs hashing/poseidon.circom t, s, r in out">
+<h3 class="template-name"><code>MixS(t, S, r)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[t]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[t]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/poseidon.circom</code></p>
+</article>
+<article class="template-doc" id="PoseidonEx-hashing-poseidon-circom" data-search="poseidonex hashing/poseidon.circom ninputs, nouts inputs initialstate out">
+<h3 class="template-name"><code>PoseidonEx(nInputs, nOuts)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>inputs[nInputs]</code></li><li><code>initialState</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[nOuts]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/poseidon.circom</code></p>
+</article>
+<article class="template-doc" id="Poseidon-hashing-poseidon-circom" data-search="poseidon hades poseidon hash (same spec as circomlib, no dependency). hashing/poseidon.circom ninputs depends on ninputs: hades permutation (sigma, ark, mix rounds). ~261 constraints for ninputs=3; ~297 for 4. dominant in merkle/nullifier circuits. same spec as circomlib poseidon; constants in poseidon_constants.circom. use for commitments, merkle, nullifiers; not for collision resistance outside zk. configurable input width. constants in poseidon_constants.circom. use for merkle trees, nullifiers, commitments. ninputs number of input field elements. inputs out">
+<h3 class="template-name"><code>Poseidon(nInputs)</code></h3>
+<p class="template-notice">Hades Poseidon hash (same spec as circomlib, no dependency).</p>
+<p class="template-dev"><strong>Dev:</strong> Configurable input width. Constants in poseidon_constants.circom. Use for Merkle trees, nullifiers, commitments.</p>
+<p class="template-meta"><strong>Complexity:</strong> Depends on nInputs: Hades permutation (Sigma, Ark, Mix rounds). ~261 constraints for nInputs=3; ~297 for 4. Dominant in Merkle/nullifier circuits.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Same spec as circomlib Poseidon; constants in poseidon_constants.circom. Use for commitments, Merkle, nullifiers; not for collision resistance outside ZK.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>nInputs</code> — Number of input field elements.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>inputs[nInputs]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — Single field element output.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/poseidon.circom</code></p>
+</article>
+<article class="template-doc" id="Ch_t-hashing-sha256-ch-circom" data-search="ch_t hashing/sha256/ch.circom n a b c out">
+<h3 class="template-name"><code>Ch_t(n)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>a[n]</code></li><li><code>b[n]</code></li><li><code>c[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/ch.circom</code></p>
+</article>
+<article class="template-doc" id="H-hashing-sha256-constants-circom" data-search="h hashing/sha256/constants.circom idx out">
+<h3 class="template-name"><code>H(idx)</code></h3>
+<dt>Inputs</dt><dd><ul><li><em>from template body</em></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[32]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/constants.circom</code></p>
+</article>
+<article class="template-doc" id="K-hashing-sha256-constants-circom" data-search="k hashing/sha256/constants.circom idx out">
+<h3 class="template-name"><code>K(idx)</code></h3>
+<dt>Inputs</dt><dd><ul><li><em>from template body</em></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[32]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/constants.circom</code></p>
+</article>
+<article class="template-doc" id="Maj_t-hashing-sha256-maj-circom" data-search="maj_t hashing/sha256/maj.circom n a b c out">
+<h3 class="template-name"><code>Maj_t(n)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>a[n]</code></li><li><code>b[n]</code></li><li><code>c[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/maj.circom</code></p>
+</article>
+<article class="template-doc" id="RotR-hashing-sha256-rotate-circom" data-search="rotr hashing/sha256/rotate.circom n, r in out">
+<h3 class="template-name"><code>RotR(n, r)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/rotate.circom</code></p>
+</article>
+<article class="template-doc" id="Sha256-hashing-sha256-sha256-circom" data-search="sha256 hashing/sha256/sha256.circom nbits in out">
+<h3 class="template-name"><code>Sha256(nBits)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[nBits]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[256]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/sha256.circom</code></p>
+</article>
+<article class="template-doc" id="Sha256compression-hashing-sha256-sha256compression-circom" data-search="sha256compression hashing/sha256/sha256compression.circom hin inp out">
+<h3 class="template-name"><code>Sha256compression()</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>hin[256]</code></li><li><code>inp[512]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[256]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/sha256compression.circom</code></p>
+</article>
+<article class="template-doc" id="ShR-hashing-sha256-shift-circom" data-search="shr hashing/sha256/shift.circom n, r in out">
+<h3 class="template-name"><code>ShR(n, r)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/shift.circom</code></p>
+</article>
+<article class="template-doc" id="SmallSigma-hashing-sha256-sigma-circom" data-search="smallsigma hashing/sha256/sigma.circom ra, rb, rc in out">
+<h3 class="template-name"><code>SmallSigma(ra, rb, rc)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[32]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[32]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/sigma.circom</code></p>
+</article>
+<article class="template-doc" id="BigSigma-hashing-sha256-sigma-circom" data-search="bigsigma hashing/sha256/sigma.circom ra, rb, rc in out">
+<h3 class="template-name"><code>BigSigma(ra, rb, rc)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[32]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[32]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/sigma.circom</code></p>
+</article>
+<article class="template-doc" id="SigmaPlus-hashing-sha256-sigmaplus-circom" data-search="sigmaplus hashing/sha256/sigmaplus.circom in2 in7 in15 in16 out">
+<h3 class="template-name"><code>SigmaPlus()</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in2[32]</code></li><li><code>in7[32]</code></li><li><code>in15[32]</code></li><li><code>in16[32]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[32]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/sigmaplus.circom</code></p>
+</article>
+<article class="template-doc" id="T1-hashing-sha256-t1-circom" data-search="t1 hashing/sha256/t1.circom h e f g k w out">
+<h3 class="template-name"><code>T1()</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>h[32]</code></li><li><code>e[32]</code></li><li><code>f[32]</code></li><li><code>g[32]</code></li><li><code>k[32]</code></li><li><code>w[32]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[32]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/t1.circom</code></p>
+</article>
+<article class="template-doc" id="T2-hashing-sha256-t2-circom" data-search="t2 hashing/sha256/t2.circom a b c out">
+<h3 class="template-name"><code>T2()</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>a[32]</code></li><li><code>b[32]</code></li><li><code>c[32]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[32]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/t2.circom</code></p>
+</article>
+<article class="template-doc" id="Xor3-hashing-sha256-xor3-circom" data-search="xor3 hashing/sha256/xor3.circom n a b c out">
+<h3 class="template-name"><code>Xor3(n)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>a[n]</code></li><li><code>b[n]</code></li><li><code>c[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/hashing/sha256/xor3.circom</code></p>
+</article>
+</section>
+
+<section class="docs-category" id="cat-merkle">
+<h2>Merkle</h2>
+<p class="docs-category-intro">7 templates in this category.</p>
+<article class="template-doc" id="MerkleInclusionProof-merkle-merkle_inclusion-circom" data-search="merkleinclusionproof proves that leaf is in a binary merkle tree with the given root. merkle/merkle_inclusion.circom levels o(levels): (levels+1)×poseidon(1 or 2), levels×switcher. ~697 constraints for levels=2 (poseidon cost dominates). pathindices constrained binary. combine with nullifier for double-spend prevention; verify root on-chain. pathindices[i]=0 means current node is left child, 1 means right. uses poseidon(2) per level. combine with nullifier for double-spend prevention. levels tree depth (number of path elements). leaf pathelements pathindices root">
+<h3 class="template-name"><code>MerkleInclusionProof(levels)</code></h3>
+<p class="template-notice">Proves that leaf is in a binary Merkle tree with the given root.</p>
+<p class="template-dev"><strong>Dev:</strong> pathIndices[i]=0 means current node is left child, 1 means right. Uses Poseidon(2) per level. Combine with Nullifier for double-spend prevention.</p>
+<p class="template-meta"><strong>Complexity:</strong> O(levels): (levels+1)×Poseidon(1 or 2), levels×Switcher. ~697 constraints for levels=2 (Poseidon cost dominates).</p>
+<p class="template-meta template-security"><strong>Security:</strong> pathIndices constrained binary. Combine with Nullifier for double-spend prevention; verify root on-chain.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>levels</code> — Tree depth (number of path elements).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>leaf</code> — Leaf value to prove.</li><li><code>pathElements[levels]</code></li><li><code>pathIndices[levels]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>root</code> — Computed root (must match public root).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/merkle/merkle_inclusion.circom</code></p>
+</article>
+<article class="template-doc" id="SparseMerkleInclusion-merkle-merkle_inclusion-circom" data-search="sparsemerkleinclusion proves that the leaf at key (pathindices) equals the given value in a sparse merkle tree. merkle/merkle_inclusion.circom levels same as merkleinclusionproof; use a fixed empty-leaf convention (e.g. 0) for sparse trees. levels tree depth. leaf pathelements pathindices root">
+<h3 class="template-name"><code>SparseMerkleInclusion(levels)</code></h3>
+<p class="template-notice">Proves that the leaf at key (pathIndices) equals the given value in a sparse Merkle tree.</p>
+<p class="template-dev"><strong>Dev:</strong> Same as MerkleInclusionProof; use a fixed empty-leaf convention (e.g. 0) for sparse trees.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>levels</code> — Tree depth.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>leaf</code> — Value at the key.</li><li><code>pathElements[levels]</code></li><li><code>pathIndices[levels]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>root</code> — Merkle root.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/merkle/merkle_inclusion.circom</code></p>
+</article>
+<article class="template-doc" id="SparseMerkleExclusion-merkle-merkle_inclusion-circom" data-search="sparsemerkleexclusion proves that the leaf at key (pathindices) is empty in a sparse merkle tree. merkle/merkle_inclusion.circom levels uses merkleinclusionproof with leaf = 0. levels tree depth. pathelements pathindices root">
+<h3 class="template-name"><code>SparseMerkleExclusion(levels)</code></h3>
+<p class="template-notice">Proves that the leaf at key (pathIndices) is empty in a sparse Merkle tree.</p>
+<p class="template-dev"><strong>Dev:</strong> Uses MerkleInclusionProof with leaf = 0.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>levels</code> — Tree depth.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>pathElements[levels]</code></li><li><code>pathIndices[levels]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>root</code> — Merkle root.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/merkle/merkle_inclusion.circom</code></p>
+</article>
+<article class="template-doc" id="IncrementalMerkleInclusion-merkle-merkle_inclusion-circom" data-search="incrementalmerkleinclusion proves leaf at numeric index is in an append-only merkle tree. merkle/merkle_inclusion.circom levels pathindices derived from index via strictnum2bits (index range-checked to [0, 2^levels)). use for deposit-style trees. levels tree depth. leaf index pathelements root">
+<h3 class="template-name"><code>IncrementalMerkleInclusion(levels)</code></h3>
+<p class="template-notice">Proves leaf at numeric index is in an append-only Merkle tree.</p>
+<p class="template-dev"><strong>Dev:</strong> pathIndices derived from index via StrictNum2Bits (index range-checked to [0, 2^levels)). Use for deposit-style trees.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>levels</code> — Tree depth.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>leaf</code> — Leaf value.</li><li><code>index</code> — Numeric index of the leaf.</li><li><code>pathElements[levels]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>root</code> — Merkle root.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/merkle/merkle_inclusion.circom</code></p>
+</article>
+<article class="template-doc" id="MerkleUpdateProof-merkle-merkle_inclusion-circom" data-search="merkleupdateproof proves newroot is oldroot with one leaf updated at the same path. merkle/merkle_inclusion.circom levels constrains two inclusion proofs (oldleaf→oldroot, newleaf→newroot) with same pathelements and pathindices. levels tree depth. oldroot newroot oldleaf newleaf pathelements pathindices">
+<h3 class="template-name"><code>MerkleUpdateProof(levels)</code></h3>
+<p class="template-notice">Proves newRoot is oldRoot with one leaf updated at the same path.</p>
+<p class="template-dev"><strong>Dev:</strong> Constrains two inclusion proofs (oldLeaf→oldRoot, newLeaf→newRoot) with same pathElements and pathIndices.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>levels</code> — Tree depth.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>oldRoot</code> — Previous root.</li><li><code>newRoot</code> — Root after update.</li><li><code>oldLeaf</code> — Leaf value before.</li><li><code>newLeaf</code> — Leaf value after.</li><li><code>pathElements[levels]</code></li><li><code>pathIndices[levels]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><em>from template body</em></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/merkle/merkle_inclusion.circom</code></p>
+</article>
+<article class="template-doc" id="Nullifier-merkle-merkle_inclusion-circom" data-search="nullifier nullifier hash for double-spend prevention: h(secret, externalnullifier). merkle/merkle_inclusion.circom domainsize 1× poseidon(2): ~240 constraints (poseidon cost). use a unique externalnullifier per action to prevent cross-action replay. keep secret unknown; nullifier reveals double-use only. uses poseidon(2). use a unique externalnullifier per action. combine with merkleinclusionproof for anonymous spend. domainsize unused; for api compatibility. secret externalnullifier nullifierhash">
+<h3 class="template-name"><code>Nullifier(domainSize)</code></h3>
+<p class="template-notice">Nullifier hash for double-spend prevention: H(secret, externalNullifier).</p>
+<p class="template-dev"><strong>Dev:</strong> Uses Poseidon(2). Use a unique externalNullifier per action. Combine with MerkleInclusionProof for anonymous spend.</p>
+<p class="template-meta"><strong>Complexity:</strong> 1× Poseidon(2): ~240 constraints (Poseidon cost).</p>
+<p class="template-meta template-security"><strong>Security:</strong> Use a unique externalNullifier per action to prevent cross-action replay. Keep secret unknown; nullifier reveals double-use only.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>domainSize</code> — Unused; for API compatibility.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>secret</code> — Prover's secret.</li><li><code>externalNullifier</code> — Action identifier (unique per action).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>nullifierHash</code> — Poseidon(secret, externalNullifier).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/merkle/merkle_inclusion.circom</code></p>
+</article>
+<article class="template-doc" id="AllowlistMembership-merkle-merkle_inclusion-circom" data-search="allowlistmembership proves identity is in a merkle allowlist: hashes identity to leaf, proves inclusion. merkle/merkle_inclusion.circom levels use with nullifier in contracts to prevent double-use (verify proof + check nullifier not used). levels tree depth. identity pathelements pathindices root">
+<h3 class="template-name"><code>AllowlistMembership(levels)</code></h3>
+<p class="template-notice">Proves identity is in a Merkle allowlist: hashes identity to leaf, proves inclusion.</p>
+<p class="template-dev"><strong>Dev:</strong> Use with Nullifier in contracts to prevent double-use (verify proof + check nullifier not used).</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>levels</code> — Tree depth.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>identity</code> — Private identity (e.g. commitment or leaf preimage).</li><li><code>pathElements[levels]</code></li><li><code>pathIndices[levels]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>root</code> — Tree root (match on-chain).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/merkle/merkle_inclusion.circom</code></p>
+</article>
+</section>
+
+<section class="docs-category" id="cat-voting">
+<h2>Voting</h2>
+<p class="docs-category-intro">13 templates in this category.</p>
+<article class="template-doc" id="MACICommandPack-voting-maci_voting-circom" data-search="macicommandpack pack five 50-bit maci command fields into p (maci v1 §2.5). voting/maci_voting.circom p = cm_i + cm_iv·2^50 + cm_n·2^100 + cm_w·2^150 + cm_id·2^200. each input range-checked. stateindex voteoption nonce voteweight pollid packed">
+<h3 class="template-name"><code>MACICommandPack()</code></h3>
+<p class="template-notice">Pack five 50-bit MACI command fields into p (MACI v1 §2.5).</p>
+<p class="template-dev"><strong>Dev:</strong> p = cm_i + cm_iv·2^50 + cm_n·2^100 + cm_w·2^150 + cm_id·2^200. Each input range-checked.</p>
+<dt>Inputs</dt><dd><ul><li><code>stateIndex</code> — cm_i — state leaf index (50 bits).</li><li><code>voteOption</code> — cm_iv — vote option index (50 bits).</li><li><code>nonce</code> — cm_n — action nonce (50 bits).</li><li><code>voteWeight</code> — cm_w — voice credit allocation (50 bits).</li><li><code>pollId</code> — cm_id — poll identifier (50 bits).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>packed</code> — p — 250-bit packed command prefix.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/maci_voting.circom</code></p>
+</article>
+<article class="template-doc" id="MACICommandUnpack-voting-maci_voting-circom" data-search="macicommandunpack unpack p into five 50-bit maci command fields (maci v1 §2.6.1). voting/maci_voting.circom inverse of macicommandpack; p must be in [0, 2^250). packed stateindex voteoption nonce voteweight pollid">
+<h3 class="template-name"><code>MACICommandUnpack()</code></h3>
+<p class="template-notice">Unpack p into five 50-bit MACI command fields (MACI v1 §2.6.1).</p>
+<p class="template-dev"><strong>Dev:</strong> Inverse of MACICommandPack; p must be in [0, 2^250).</p>
+<dt>Inputs</dt><dd><ul><li><code>packed</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>stateIndex</code></li><li><code>voteOption</code></li><li><code>nonce</code></li><li><code>voteWeight</code></li><li><code>pollId</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/maci_voting.circom</code></p>
+</article>
+<article class="template-doc" id="MACICommandHash-voting-maci_voting-circom" data-search="macicommandhash command digest h_cm = poseidon4([p, pubkeyx, pubkeyy, salt]) (maci v1 §2.5). voting/maci_voting.circom packed pubkeyx pubkeyy salt hash">
+<h3 class="template-name"><code>MACICommandHash()</code></h3>
+<p class="template-notice">Command digest h_cm = poseidon4([p, pubKeyX, pubKeyY, salt]) (MACI v1 §2.5).</p>
+<dt>Inputs</dt><dd><ul><li><code>packed</code> — Packed command prefix p.</li><li><code>pubKeyX</code> — Public key x-coordinate.</li><li><code>pubKeyY</code> — Public key y-coordinate.</li><li><code>salt</code> — Command salt cm_s.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>hash</code> — h_cm for EdDSA signing (off-circuit).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/maci_voting.circom</code></p>
+</article>
+<article class="template-doc" id="MACISharedKeyHash-voting-maci_voting-circom" data-search="macisharedkeyhash bind ecdh shared key k_s = [ks0, ks1] to a single field (maci v1 §1.10). voting/maci_voting.circom ks0, ks1 are derived off-circuit via baby jubjub ecdh; only the hash is used in-circuit. ks0 ks1 hash">
+<h3 class="template-name"><code>MACISharedKeyHash()</code></h3>
+<p class="template-notice">Bind ECDH shared key k_s = [ks0, ks1] to a single field (MACI v1 §1.10).</p>
+<p class="template-dev"><strong>Dev:</strong> ks0, ks1 are derived off-circuit via Baby JubJub ECDH; only the hash is used in-circuit.</p>
+<dt>Inputs</dt><dd><ul><li><code>ks0</code> — Shared key element 0.</li><li><code>ks1</code> — Shared key element 1.</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>hash</code> — poseidon2([ks0, ks1]).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/maci_voting.circom</code></p>
+</article>
+<article class="template-doc" id="MACIMessageKeystream-voting-maci_voting-circom" data-search="macimessagekeystream single keystream block for additive message encryption. voting/maci_voting.circom keystream = poseidon3([sharedkeyhash, nonce, index]). maci v1 uses duplexsponge off-chain. sharedkeyhash nonce index keystream">
+<h3 class="template-name"><code>MACIMessageKeystream()</code></h3>
+<p class="template-notice">Single keystream block for additive message encryption.</p>
+<p class="template-dev"><strong>Dev:</strong> keystream = poseidon3([sharedKeyHash, nonce, index]). MACI v1 uses DuplexSponge off-chain.</p>
+<dt>Inputs</dt><dd><ul><li><code>sharedKeyHash</code></li><li><code>nonce</code></li><li><code>index</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>keystream</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/maci_voting.circom</code></p>
+</article>
+<article class="template-doc" id="MACIMessageEncrypt-voting-maci_voting-circom" data-search="macimessageencrypt encrypt maci v1 plaintext t (length 7): ciphertext[i] = t[i] + keystream(i). voting/maci_voting.circom plaintext layout: t = [p, pubkeyx, pubkeyy, salt, sigr8x, sigr8y, sigs]. sharedkeyhash nonce plaintext ciphertext">
+<h3 class="template-name"><code>MACIMessageEncrypt()</code></h3>
+<p class="template-notice">Encrypt MACI v1 plaintext t (length 7): ciphertext[i] = t[i] + keystream(i).</p>
+<p class="template-dev"><strong>Dev:</strong> Plaintext layout: t = [p, pubKeyX, pubKeyY, salt, sigR8x, sigR8y, sigS].</p>
+<dt>Inputs</dt><dd><ul><li><code>sharedKeyHash</code></li><li><code>nonce</code></li><li><code>plaintext[7]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>ciphertext[7]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/maci_voting.circom</code></p>
+</article>
+<article class="template-doc" id="MACIMessageDecrypt-voting-maci_voting-circom" data-search="macimessagedecrypt decrypt maci message: plaintext[i] = ciphertext[i] - keystream(i). voting/maci_voting.circom sharedkeyhash nonce ciphertext plaintext">
+<h3 class="template-name"><code>MACIMessageDecrypt()</code></h3>
+<p class="template-notice">Decrypt MACI message: plaintext[i] = ciphertext[i] - keystream(i).</p>
+<dt>Inputs</dt><dd><ul><li><code>sharedKeyHash</code></li><li><code>nonce</code></li><li><code>ciphertext[7]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>plaintext[7]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/maci_voting.circom</code></p>
+</article>
+<article class="template-doc" id="MACIMessageHash-voting-maci_voting-circom" data-search="macimessagehash hash encrypted message for on-chain commitment / message tree leaf. voting/maci_voting.circom messagehash = poseidon7(ciphertext). coordinator stores mm + ephemeral pubkey off-chain. ciphertext hash">
+<h3 class="template-name"><code>MACIMessageHash()</code></h3>
+<p class="template-notice">Hash encrypted message for on-chain commitment / message tree leaf.</p>
+<p class="template-dev"><strong>Dev:</strong> messageHash = poseidon7(ciphertext). Coordinator stores MM + ephemeral pubkey off-chain.</p>
+<dt>Inputs</dt><dd><ul><li><code>ciphertext[7]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>hash</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/maci_voting.circom</code></p>
+</article>
+<article class="template-doc" id="MACIVoteCommit-voting-maci_voting-circom" data-search="macivotecommit commit phase: encrypt maci v1 command+signature plaintext and bind shared key hash. voting/maci_voting.circom builds t = [p, pubkeyx, pubkeyy, salt, sigr8x, sigr8y, sigs], encrypts with sharedkeyhash. stateindex voteoption nonce voteweight pollid pubkeyx pubkeyy salt sigr8x sigr8y sigs sharedkeyhash ciphertext messagehash commandhash">
+<h3 class="template-name"><code>MACIVoteCommit()</code></h3>
+<p class="template-notice">Commit phase: encrypt MACI v1 command+signature plaintext and bind shared key hash.</p>
+<p class="template-dev"><strong>Dev:</strong> Builds t = [p, pubKeyX, pubKeyY, salt, sigR8x, sigR8y, sigS], encrypts with sharedKeyHash.</p>
+<dt>Inputs</dt><dd><ul><li><code>stateIndex</code></li><li><code>voteOption</code></li><li><code>nonce</code></li><li><code>voteWeight</code></li><li><code>pollId</code></li><li><code>pubKeyX</code></li><li><code>pubKeyY</code></li><li><code>salt</code></li><li><code>sigR8x</code></li><li><code>sigR8y</code></li><li><code>sigS</code></li><li><code>sharedKeyHash</code> — — poseidon2([ks0, ks1]) from ECDH (off-circuit).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>ciphertext[7]</code></li><li><code>messageHash</code> — poseidon7(ciphertext) for on-chain publish.</li><li><code>commandHash</code> — h_cm = poseidon4([p, pubKeyX, pubKeyY, salt]).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/maci_voting.circom</code></p>
+</article>
+<article class="template-doc" id="MACIVoteDecryptVerify-voting-maci_voting-circom" data-search="macivotedecryptverify coordinator-side: verify decrypted maci vote option is valid for the poll. voting/maci_voting.circom n decrypt off-circuit (or via macimessagedecrypt), then prove voteoption in allowlist, n number of allowed vote options. packed voteoption nonce voteweight pollid stateindex expectedpollid minvalidnonce allowedvoteoptions valid">
+<h3 class="template-name"><code>MACIVoteDecryptVerify(n)</code></h3>
+<p class="template-notice">Coordinator-side: verify decrypted MACI vote option is valid for the poll.</p>
+<p class="template-dev"><strong>Dev:</strong> Decrypt off-circuit (or via MACIMessageDecrypt), then prove voteOption in allowlist,</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of allowed vote options.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>packed</code> — Decrypted command prefix p from plaintext[0].</li><li><code>voteOption</code></li><li><code>nonce</code></li><li><code>voteWeight</code></li><li><code>pollId</code></li><li><code>stateIndex</code></li><li><code>expectedPollId</code> — Public poll id from contract.</li><li><code>minValidNonce</code> — Minimum valid nonce from ballot (blt_n + 1 in MACI).</li><li><code>allowedVoteOptions[n]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>valid</code> — 1 if all checks pass.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/maci_voting.circom</code></p>
+</article>
+<article class="template-doc" id="VoteCommit-voting-vote_commit-circom" data-search="votecommit commit phase: proves commitment = h(choice, revealidentity, salt, ballotid) and choice in [0, numchoices). voting/vote_commit.circom numchoices lessthan(32) + poseidon(4): ~330 constraints. keep numchoices within 32-bit range. commitment must be published and stored for reveal. choice in [0, numchoices) enforced; ensure ballotid is unique per ballot. public input: commitment (contract stores it for reveal phase). use with votereveal for anonymous 1-of-n voting. numchoices number of choices (choice must be &lt; numchoices). choice revealidentity salt ballotid commitment">
+<h3 class="template-name"><code>VoteCommit(numChoices)</code></h3>
+<p class="template-notice">Commit phase: proves commitment = H(choice, revealIdentity, salt, ballotId) and choice in [0, numChoices).</p>
+<p class="template-dev"><strong>Dev:</strong> Public input: commitment (contract stores it for reveal phase). Use with VoteReveal for anonymous 1-of-N voting.</p>
+<p class="template-meta"><strong>Complexity:</strong> LessThan(32) + Poseidon(4): ~330 constraints. Keep numChoices within 32-bit range.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Commitment must be published and stored for reveal. choice in [0, numChoices) enforced; ensure ballotId is unique per ballot.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>numChoices</code> — Number of choices (choice must be &lt; numChoices).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>choice</code> — Voter's choice (private).</li><li><code>revealIdentity</code> — Identity used in reveal.</li><li><code>salt</code> — Random salt.</li><li><code>ballotId</code> — Ballot identifier.</li><li><code>commitment</code> — Public commitment (must match H(choice, revealIdentity, salt, ballotId)).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><em>from template body</em></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/vote_commit.circom</code></p>
+</article>
+<article class="template-doc" id="VoteCommitAllowlist-voting-vote_commit-circom" data-search="votecommitallowlist commit phase with allowlist: commitment = h(choice, revealidentity, salt, ballotid) and choice in allowedchoices[n]. voting/vote_commit.circom n use with votereveal for anonymous 1-of-n voting when valid choices are a set (e.g. [2,5,7]). contract verifies proof and tallies. n number of allowed choices. choice allowedchoices revealidentity salt ballotid commitment">
+<h3 class="template-name"><code>VoteCommitAllowlist(n)</code></h3>
+<p class="template-notice">Commit phase with allowlist: commitment = H(choice, revealIdentity, salt, ballotId) and choice in allowedChoices[n].</p>
+<p class="template-dev"><strong>Dev:</strong> Use with VoteReveal for anonymous 1-of-N voting when valid choices are a set (e.g. [2,5,7]). Contract verifies proof and tallies.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of allowed choices.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>choice</code> — Voter's choice (private).</li><li><code>allowedChoices[n]</code></li><li><code>revealIdentity</code> — Identity used in reveal.</li><li><code>salt</code> — Random salt.</li><li><code>ballotId</code> — Ballot identifier.</li><li><code>commitment</code> — Public commitment (must match H(choice, revealIdentity, salt, ballotId)).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><em>from template body</em></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/vote_commit.circom</code></p>
+</article>
+<article class="template-doc" id="VoteReveal-voting-vote_reveal-circom" data-search="votereveal reveal phase: proves (choice, identity, salt, ballotid) match commitment and outputs nullifier for double-vote prevention. voting/vote_reveal.circom poseidon(4) + poseidon(2) + nullifier(1): ~780 constraints. dominated by hashes. contract must verify commitment was in committed set and nullifier not already spent. same (identity, salt, ballotid) yields same nullifier (double-vote detection). nullifier = h(h(identity, salt), ballotid). contract must check commitment was in the committed set and nullifier not yet spent. choice identity salt ballotid commitment nullifierhash">
+<h3 class="template-name"><code>VoteReveal()</code></h3>
+<p class="template-notice">Reveal phase: proves (choice, identity, salt, ballotId) match commitment and outputs nullifier for double-vote prevention.</p>
+<p class="template-dev"><strong>Dev:</strong> Nullifier = H(H(identity, salt), ballotId). Contract must check commitment was in the committed set and nullifier not yet spent.</p>
+<p class="template-meta"><strong>Complexity:</strong> Poseidon(4) + Poseidon(2) + Nullifier(1): ~780 constraints. Dominated by hashes.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Contract must verify commitment was in committed set and nullifier not already spent. Same (identity, salt, ballotId) yields same nullifier (double-vote detection).</p>
+<dt>Inputs</dt><dd><ul><li><code>choice</code> — Voter's choice.</li><li><code>identity</code> — Voter identity.</li><li><code>salt</code> — Salt (must match commit phase).</li><li><code>ballotId</code> — Ballot identifier.</li><li><code>commitment</code> — Commitment (must equal H(choice, identity, salt, ballotId)).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>nullifierHash</code> — Nullifier hash for double-vote prevention.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/voting/vote_reveal.circom</code></p>
+</article>
+</section>
+
+        <section class="docs-category" id="cat-other">
+<h2>other</h2>
+<p class="docs-category-intro">3 templates in this category.</p>
+<article class="template-doc" id="AliasCheck-aliascheck-circom" data-search="aliascheck aliascheck.circom in">
+<h3 class="template-name"><code>AliasCheck()</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[254]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><em>from template body</em></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/aliascheck.circom</code></p>
+</article>
+<article class="template-doc" id="BinSum-binsum-circom" data-search="binsum binsum.circom n, ops in out">
+<h3 class="template-name"><code>BinSum(n, ops)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[ops]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[nout]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/binsum.circom</code></p>
+</article>
+<article class="template-doc" id="CompConstant-compconstant-circom" data-search="compconstant compconstant.circom ct in out">
+<h3 class="template-name"><code>CompConstant(ct)</code></h3>
+<dt>Inputs</dt><dd><ul><li><code>in[254]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/compconstant.circom</code></p>
+</article>
+</section>
+
+      </section>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img src="assets/img/logo.png" alt="" width="28" height="28" />
+        <span class="footer-tagline">
+          <span class="t-blue">Reusable.</span>
+          <span class="t-silver">Secure.</span>
+          <span class="t-dim">No circomlib.</span>
+        </span>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="https://github.com/jose-compu/opencircom">GitHub</a>
+        <a href="https://www.npmjs.com/package/opencircom">npm</a>
+        <a href="https://github.com/jose-compu/opencircom/blob/main/LICENSE">MIT License</a>
+      </div>
+      <p class="footer-copy">OpenCircom v0.7.0 · Generated by <code>npm run docs</code></p>
+    </div>
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="js/docs.js"></script>
+</body>
+</html>

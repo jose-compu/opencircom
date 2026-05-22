@@ -90,13 +90,14 @@ Use them to jump-start a project without configuring the toolchain from scratch.
 
 ## Documentation
 
-API-style docs for each circuit category and template are **generated** (not committed). To build them:
+- **Documentation site:** [docs/index.html](./docs/index.html) (promo) and [docs/documentation.html](./docs/documentation.html) (full reference with searchable template catalog).
+- **API markdown:** generated from circuit comments (not committed). To build:
 
 ```bash
 npm run docs
 ```
 
-Output is written to **docs/** (see [docs/README.md](./docs/README.md) after generation). The script parses OpenZeppelin-style `@title`, `@notice`, `@dev`, `@param`, `@custom:input`, `@custom:output` block comments in the circuit files.
+Output markdown is written to **docs/api/**; the HTML documentation page at **docs/documentation.html** is regenerated at the same time.
 
 ## Circuits
 
