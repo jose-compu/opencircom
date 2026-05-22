@@ -5,8 +5,8 @@ node_modules/
 build/
 test/build/
 
-# Generated documentation (npm run docs)
-docs/
+# Generated API docs (npm run docs)
+docs/api/
 
 # Environment and secrets
 .env
