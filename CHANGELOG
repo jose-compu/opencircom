@@ -1,8 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.7.0
 
 - MACI v1 building blocks: `MACICommandPack`, `MACICommandUnpack`, `MACICommandHash`, `MACISharedKeyHash`, `MACIMessageEncrypt`, `MACIMessageDecrypt`, `MACIMessageHash`, `MACIVoteCommit`, `MACIVoteDecryptVerify(n)` — command packing/h_cm per [MACI v1 spec](https://maci.pse.dev/docs/v1.2/spec); additive Poseidon keystream encryption; coordinator verify with allowlist + nonce. 8 tests.
+- CLI: `opencircom path`, `compile`, `compile --all-test`, `list`, `init` (`bin/opencircom.js`); circom required on PATH.
+- Test pipeline: `npm test` runs `compile:test` first; compile script loops all `test/circuits/*.circom` (fixes missing wasm for string/SHA-256 tests).
+- Fix: `sha256_test.js` output path aligned to repo root `build/`.
+- Docs: README CLI section, SECURITY.md MACI coordinator notes.
 
 ## 0.6.0
 

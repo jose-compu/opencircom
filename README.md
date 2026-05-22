@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Circom](https://img.shields.io/badge/Circom-ZK%20Circuits-8B5CF6)](https://docs.circom.io/)
-[![Tests](https://img.shields.io/badge/tests-253%2B%20passing-success)](./test)
+[![Tests](https://img.shields.io/badge/tests-153%2B%20passing-success)](./test)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.x-brightgreen)](https://nodejs.org/)
 [![No circomlib](https://img.shields.io/badge/deps-no%20circomlib-informational)](./circuits)
 
@@ -54,7 +54,7 @@ From npm:
 npm install opencircom
 ```
 
-Or add to your `package.json`: `"opencircom": "^0.5.0"`.
+Or add to your `package.json`: `"opencircom": "^0.7.0"`.
 
 ### Hardhat
 
@@ -203,7 +203,7 @@ From this repo, `npm run compile:test` compiles every file in `test/circuits/` b
 
 Tests use **real** ZK where applicable: circuits are compiled with Circom, then a small Powers of Tau and zkey are generated, and a Groth16 proof is created and verified with snarkjs (no mocks).
 
-**Coverage** (253+ tests): Poseidon, PoseidonEncrypt, SHA-256, Comparators, IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates, Bitify, Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2, MuxN, Arithmetic (incl. PoEVerify), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, MACI, and one full Groth16 prove/verify.
+**Coverage** (153+ tests): Poseidon, PoseidonEncrypt, SHA-256, Comparators, IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates, Bitify, Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2, MuxN, Arithmetic (incl. PoEVerify), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, MACI, and one full Groth16 prove/verify.
 
 ```bash
 npm install
