@@ -52,4 +52,11 @@ circom test/circuits/accumulator_membership_test.circom --r1cs --wasm -o build -
 circom test/circuits/utf8_validation_test.circom --r1cs --wasm -o build -l circuits
 circom test/circuits/fixed_string_match_test.circom --r1cs --wasm -o build -l circuits
 circom test/circuits/bytes_all_in_range_test.circom --r1cs --wasm -o build -l circuits
+circom test/circuits/poseidon2_test.circom --r1cs --wasm -o build -l circuits
+circom test/circuits/poseidon3_test.circom --r1cs --wasm -o build -l circuits
+circom test/circuits/poseidon7_test.circom --r1cs --wasm -o build -l circuits
+circom test/circuits/maci_command_pack_test.circom --r1cs --wasm -o build -l circuits
+circom test/circuits/maci_message_roundtrip_test.circom --r1cs --wasm -o build -l circuits
+circom test/circuits/maci_vote_commit_test.circom --r1cs --wasm -o build -l circuits
+circom test/circuits/maci_vote_decrypt_verify_test.circom --r1cs --wasm -o build -l circuits
 echo "Done."

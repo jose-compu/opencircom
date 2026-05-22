@@ -132,6 +132,9 @@ Output is written to **docs/** (see [docs/README.md](./docs/README.md) after gen
 | Identity  | `IdentityCommitment()`, `SemaphoreMembership(levels)` | Semaphore-style commitment = Poseidon(identity, secret); prove (identity, secret) in allowlist tree. Use with Nullifier. |
 | Identity  | `Nullifier(domainSize)`  | Nullifier hash for double-spend prevention. |
 | Voting    | `VoteCommit(numChoices)`, `VoteCommitAllowlist(n)`, `VoteReveal()` | Commit-reveal; allowlist variant constrains choice to allowedChoices[n]; double-vote prevention (nullifier-based). |
+| MACI      | `MACICommandPack()`, `MACICommandUnpack()`, `MACICommandHash()`, `MACISharedKeyHash()` | MACI v1 command packing and hashes ([spec](https://maci.pse.dev/docs/v1.2/spec)). |
+| MACI      | `MACIMessageEncrypt()`, `MACIMessageDecrypt()`, `MACIMessageHash()` | Additive Poseidon keystream message encryption (composable; full DuplexSponge is coordinator-side in MACI). |
+| MACI      | `MACIVoteCommit()`, `MACIVoteDecryptVerify(n)` | Encrypt command+signature plaintext; coordinator verifies decrypted vote in allowlist with nonce/poll checks. |
 | String & data | `Utf8Validation(n)`, `FixedStringMatch(n)`, `BytesAllInRange(n, lo, hi)`, `ByteInRange(lo, hi)` | UTF-8 byte-sequence validation; fixed string equality; bytes in [lo, hi] (e.g. digits). |
 
 ## Implemented (roadmap coverage)
@@ -143,6 +146,7 @@ Output is written to **docs/** (see [docs/README.md](./docs/README.md) after gen
 - **Symmetric encryption**: Poseidon-based (`PoseidonEncrypt()` — ciphertext = plaintext + Poseidon(key); decryption off-chain).
 - **Identity & credentials**: Semaphore-style commitment (`IdentityCommitment()`, `SemaphoreMembership(levels)` — prove (identity, secret) in allowlist; use with Nullifier). Age/threshold proofs: use `RangeProof(n)` (a = threshold, b = max).
 - **Voting**: Commit-reveal with nullifier, allowlist variant (`VoteCommitAllowlist`), tally (`Tally`).
+- **MACI**: Command pack/unpack/hash, shared-key binding, message encrypt/decrypt, `MACIVoteCommit`, `MACIVoteDecryptVerify` (MACI v1 layout; EdDSA/ECDH off-circuit).
 - **String & data**: UTF-8 validation (`Utf8Validation(n)`), fixed string match (`FixedStringMatch(n)`), bytes-in-range (`BytesAllInRange(n, lo, hi)`, `ByteInRange(lo, hi)`).
 
 ## Roadmap (potential additions)
