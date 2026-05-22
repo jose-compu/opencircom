@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- MACI v1 building blocks: `MACICommandPack`, `MACICommandUnpack`, `MACICommandHash`, `MACISharedKeyHash`, `MACIMessageEncrypt`, `MACIMessageDecrypt`, `MACIMessageHash`, `MACIVoteCommit`, `MACIVoteDecryptVerify(n)` — command packing/h_cm per [MACI v1 spec](https://maci.pse.dev/docs/v1.2/spec); additive Poseidon keystream encryption; coordinator verify with allowlist + nonce. 8 tests.
+
 ## 0.6.0
 
 - Arithmetic: PoEVerify(n) — SNARK-friendly proof-of-exponentiation verification (constrains result = base^exponent in the field; n-bit exponent, no big-int); for field-based accumulators (e.g. witness^element = A). 14 dedicated tests (edge cases, max exponent, 0^0, 1^exp, failure cases).

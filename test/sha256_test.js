@@ -27,13 +27,15 @@ function bits2buffer(bits) {
     return Buffer.from(bytes);
 }
 
+const BUILD = path.join(__dirname, "..", "build");
+
 describe("SHA-256 (opencircom)", function () {
     let circuit256;
     this.timeout(120000);
 
     before(async () => {
         circuit256 = await wasm_tester(path.join(__dirname, "circuits", "sha256_256_test.circom"), {
-            output: path.join(__dirname, "build"),
+            output: BUILD,
             recompile: false
         });
     });

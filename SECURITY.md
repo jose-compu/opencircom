@@ -31,6 +31,13 @@
 
 - `Nullifier(secret, externalNullifier)` is for one-time use per (`secret`, externalNullifier). Use a unique `externalNullifier` per action (e.g. poll id, withdrawal nonce).
 
+### MACI building blocks
+
+- **Off-circuit coordinator**: Baby JubJub ECDH shared key, EdDSA sign `h_cm`, full MACI DuplexSponge encryption, message batch processing, and state/ballot tree updates remain application-layer ([MACI v1 spec](https://maci.pse.dev/docs/v1.2/spec)).
+- **In-circuit encryption** uses additive Poseidon keystream, not MACI DuplexSponge; interoperable command packing and `h_cm` match MACI v1.
+- **`MACIVoteDecryptVerify`**: enforce `minValidNonce` from ballot state; reject votes outside `allowedVoteOptions`; bind `expectedPollId`.
+- **Nonce monotonicity**: MACI applies messages in reverse order; coordinator must track ballot nonces correctly.
+
 ## Audits
 
 This library has not undergone a formal audit. Use in production at your own risk. Prefer additional review for high-value applications.
