@@ -94,6 +94,7 @@ a:hover {
 .logo-link img {
   height: 36px;
   width: auto;
+  border-radius: 10px;
 }
 
 .logo-text {
@@ -272,8 +273,8 @@ nav a:hover {
 .hero-logo-wrap::before {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: 50%;
+  inset: 0.75rem;
+  border-radius: 24px;
   background: radial-gradient(circle, rgba(0, 174, 239, 0.18) 0%, transparent 70%);
   filter: blur(20px);
 }
@@ -282,6 +283,7 @@ nav a:hover {
   position: relative;
   width: min(280px, 80%);
   height: auto;
+  border-radius: 24px;
   filter: drop-shadow(0 0 30px rgba(0, 174, 239, 0.35));
 }
 
@@ -631,6 +633,10 @@ h2 {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+}
+
+.footer-brand img {
+  border-radius: 6px;
 }
 
 .footer-tagline {
