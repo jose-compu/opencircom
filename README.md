@@ -174,18 +174,43 @@ Contributions welcome; open an issue to propose or prioritize.
 
 See [SECURITY.md](SECURITY.md) for more.
 
+## CLI
+
+Requires **circom 2.x** on `PATH` (peer dependency; not bundled).
+
+```bash
+npm install opencircom
+
+# Include path for -l flag
+npx opencircom path
+
+# Compile your circuit (adds opencircom/circuits to -l automatically)
+npx opencircom compile circuits/MyCircuit.circom -o build
+
+# Compile all library test wrappers (used by npm test)
+npx opencircom compile --all-test -o build
+
+# List exported templates with descriptions
+npx opencircom list
+
+# Scaffold a minimal Poseidon commitment circuit + mocha test
+npx opencircom init my_circuit
+```
+
+From this repo, `npm run compile:test` compiles every file in `test/circuits/` before tests run.
+
 ## Tests
 
 Tests use **real** ZK where applicable: circuits are compiled with Circom, then a small Powers of Tau and zkey are generated, and a Groth16 proof is created and verified with snarkjs (no mocks).
 
-**Coverage** (253+ tests): Poseidon, PoseidonEncrypt, SHA-256, Comparators, IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates, Bitify, Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2, MuxN, Arithmetic (incl. PoEVerify), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, and one full Groth16 prove/verify.
+**Coverage** (253+ tests): Poseidon, PoseidonEncrypt, SHA-256, Comparators, IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates, Bitify, Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2, MuxN, Arithmetic (incl. PoEVerify), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, MACI, and one full Groth16 prove/verify.
 
 ```bash
 npm install
 npm test
 ```
 
-The first run runs `setup:zk` (ptau + zkey generation) and can take about a minute.
+`npm test` runs `compile:test` (all test circuits), then `setup:zk` (ptau + zkey). First run can take about a minute.
 
 ## License
 
