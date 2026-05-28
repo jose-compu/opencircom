@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Circom](https://img.shields.io/badge/Circom-ZK%20Circuits-8B5CF6)](https://docs.circom.io/)
-[![Tests](https://img.shields.io/badge/tests-153%2B%20passing-success)](./test)
+[![Tests](https://github.com/jose-compu/opencircom/actions/workflows/test.yml/badge.svg)](https://github.com/jose-compu/opencircom/actions/workflows/test.yml)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.x-brightgreen)](https://nodejs.org/)
 [![No circomlib](https://img.shields.io/badge/deps-no%20circomlib-informational)](./circuits)
 
