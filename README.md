@@ -167,6 +167,7 @@ Contributions welcome; open an issue to propose or prioritize.
 
 ## Security
 
+- **Pre-deployment checklist**: Review [docs/security-checklist.md](./docs/security-checklist.md) before trusted setup, verifier deployment, or production use.
 - **Range checks**: Use `StrictNum2Bits(n)` or `RangeProof(n)` for untrusted inputs; `LessThan(n)` assumes inputs &lt; 2^n.
 - **Merkle**: `pathIndices[i]` are constrained binary in-circuit; `Switcher` constrains `sel` to {0,1}.
 - **Nullifier**: Use a unique `externalNullifier` per action to avoid cross-action replay.

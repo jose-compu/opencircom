@@ -4,6 +4,7 @@
 
 - **No circomlib dependency**: This library is self-contained. Same algorithms (e.g. Poseidon) use the same constants as the public spec; verify hashing test vectors if you need cross-project compatibility.
 - **Constraint system**: All templates are written to produce valid R1CS; use trusted setup and verification keys.
+- **Pre-deployment checklist**: Review [docs/security-checklist.md](docs/security-checklist.md) before trusted setup, verifier deployment, or production use.
 
 ## Per-component notes
 
