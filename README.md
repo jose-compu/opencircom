@@ -44,6 +44,14 @@ If you clone or link this repo as `opencircom` in your project root, compile wit
 circom your.circom --r1cs --wasm -o build -l opencircom/circuits
 ```
 
+## Compatibility
+
+Poseidon compatibility with circomlib is covered by `test/poseidon_compat_test.js`.
+The suite compares opencircom and circomlib wrapper circuits for `nInputs = 1, 2, 4, 16`
+against fixed witness vectors. `circomlib` is a dev-only test dependency; the published
+opencircom circuits remain dependency-free. No intentional Poseidon output differences
+are documented.
+
 ## Include in Hardhat or Foundry
 
 ### Install
