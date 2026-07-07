@@ -31,6 +31,13 @@
 
 - `Nullifier(secret, externalNullifier)` is for one-time use per (`secret`, externalNullifier). Use a unique `externalNullifier` per action (e.g. poll id, withdrawal nonce).
 
+### AgeThresholdProof
+
+- **currentYear trust**: `currentYear` must come from a trusted source (e.g. `block.timestamp` in a smart contract, or a verified oracle). If `currentYear` is prover-supplied (private signal), the prover can forge a valid proof for any `birthYear` — age verification becomes meaningless.
+- **minAge**: This signal is intentionally not range-checked (typically a small public constant like 18 or 21). A large `minAge > 2^n` causes the circuit to always output 0, which is a safe failure.
+- **Underflow protection**: `birthYear > currentYear` produces a field-underflow caught by `StrictNum2Bits` on the intermediate `age` signal. The prover cannot exploit this to produce a false positive.
+- **Bit width**: Choose `n` large enough for your application's year range (e.g. `n=32` covers years up to ~2106). Too small an `n` truncates years and may produce false positives.
+
 ### MACI building blocks
 
 - **Off-circuit coordinator**: Baby JubJub ECDH shared key, EdDSA sign `h_cm`, full MACI DuplexSponge encryption, message batch processing, and state/ballot tree updates remain application-layer ([MACI v1 spec](https://maci.pse.dev/docs/v1.2/spec)).
