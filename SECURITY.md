@@ -12,10 +12,16 @@
 - Parameter `n`: inputs must be in range `[0, 2^n - 1]`. Use `n` large enough (e.g. 64 or 253) for your application.
 - `IsZero` uses a witness for the inverse; ensure your backend produces valid proofs.
 
-### Bitify (`Num2Bits`, `Bits2Num`)
+### Bitify (`Num2Bits`, `Bits2Num`, `SafeBits2Num`)
 
 - `Num2Bits(n)` proves `in` equals the sum of bits; use `n` such that `in < 2^n` in your field.
+- `Bits2Num(n)` does **not** binary-constrain `in[i]` (building block). Prefer `SafeBits2Num(n)` when bit arrays may be untrusted.
 - For full field range (254-bit) use `AliasCheck` with `Num2Bits(254)` outputs.
+
+### Gates & mux (`AND`, `OR`, `Mux1`, `Mux2` and Safe*)
+
+- Raw `AND`, `OR`, `Mux1`, `Mux2` assume binary inputs/selectors by design and do **not** enforce them (documented in the 0.5.0 audit).
+- Prefer `SafeAND()`, `SafeOR()`, `SafeMux1()`, `SafeMux2()` for untrusted bits or selectors; each adds `x*(x-1)===0` constraints before the underlying building block.
 
 ### Poseidon / MiMC
 

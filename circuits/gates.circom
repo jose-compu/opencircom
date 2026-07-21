@@ -20,10 +20,11 @@ template XOR() {
 /**
  * @title AND
  * @notice Boolean AND: out = a * b.
- * @dev Inputs 0 or 1. One constraint.
- * @custom:input a First bit.
- * @custom:input b Second bit.
+ * @dev Building-block-only: does not binary-constrain a, b. Prefer SafeAND for untrusted inputs.
+ * @custom:input a First bit (must be 0 or 1; not enforced here).
+ * @custom:input b Second bit (must be 0 or 1; not enforced here).
  * @custom:output out a AND b.
+ * @custom:security Prefer SafeAND() when a, b may be untrusted.
  */
 template AND() {
     signal input a;
@@ -33,18 +34,63 @@ template AND() {
 }
 
 /**
+ * @title SafeAND
+ * @notice Boolean AND with binary-constrained inputs: out = a * b, a,b ∈ {0,1}.
+ * @dev Wraps AND with a*(a-1)===0 and b*(b-1)===0. Prefer over AND for untrusted selectors/bits.
+ * @custom:input a First bit (constrained to 0 or 1).
+ * @custom:input b Second bit (constrained to 0 or 1).
+ * @custom:output out a AND b.
+ * @custom:complexity 3 constraints (2 binary + 1 AND).
+ * @custom:security Inputs are binary-constrained in-circuit.
+ */
+template SafeAND() {
+    signal input a;
+    signal input b;
+    signal output out;
+    a * (a - 1) === 0;
+    b * (b - 1) === 0;
+    component g = AND();
+    g.a <== a;
+    g.b <== b;
+    out <== g.out;
+}
+
+/**
  * @title OR
  * @notice Boolean OR: out = 1 iff at least one of a, b is 1.
- * @dev out = a + b - a*b. One constraint.
- * @custom:input a First bit.
- * @custom:input b Second bit.
+ * @dev Building-block-only: does not binary-constrain a, b. Prefer SafeOR for untrusted inputs.
+ * @custom:input a First bit (must be 0 or 1; not enforced here).
+ * @custom:input b Second bit (must be 0 or 1; not enforced here).
  * @custom:output out a OR b.
+ * @custom:security Prefer SafeOR() when a, b may be untrusted.
  */
 template OR() {
     signal input a;
     signal input b;
     signal output out;
     out <== a + b - a * b;
+}
+
+/**
+ * @title SafeOR
+ * @notice Boolean OR with binary-constrained inputs.
+ * @dev Wraps OR with a*(a-1)===0 and b*(b-1)===0. Prefer over OR for untrusted selectors/bits.
+ * @custom:input a First bit (constrained to 0 or 1).
+ * @custom:input b Second bit (constrained to 0 or 1).
+ * @custom:output out a OR b.
+ * @custom:complexity 3 constraints (2 binary + 1 OR).
+ * @custom:security Inputs are binary-constrained in-circuit.
+ */
+template SafeOR() {
+    signal input a;
+    signal input b;
+    signal output out;
+    a * (a - 1) === 0;
+    b * (b - 1) === 0;
+    component g = OR();
+    g.a <== a;
+    g.b <== b;
+    out <== g.out;
 }
 
 /**

@@ -31,10 +31,11 @@ template MultiMux2(n) {
 /**
  * @title Mux2
  * @notice Single 4-to-1 multiplexer: out = c[s[0] + 2*s[1]].
- * @dev Wrapper of MultiMux2(1).
+ * @dev Building-block-only: does not binary-constrain s[0], s[1]. Prefer SafeMux2 for untrusted selectors.
  * @custom:input c[4] Four choices.
- * @custom:input s[2] Selector bits.
+ * @custom:input s[2] Selector bits (must be 0/1; not enforced here).
  * @custom:output out Selected value.
+ * @custom:security Prefer SafeMux2() when s may be untrusted.
  */
 template Mux2() {
     signal input c[4];
@@ -48,4 +49,29 @@ template Mux2() {
         s[i] ==> mux.s[i];
     }
     mux.out[0] ==> out;
+}
+
+/**
+ * @title SafeMux2
+ * @notice 4-to-1 multiplexer with binary-constrained selector bits.
+ * @dev Wraps Mux2 with s[i]*(s[i]-1)===0 for i in {0,1}. Prefer over Mux2 for untrusted selectors.
+ * @custom:input c[4] Four choices.
+ * @custom:input s[2] Selector bits (each constrained to 0 or 1).
+ * @custom:output out Selected value.
+ * @custom:complexity Mux2 cost + 2 binary constraints.
+ * @custom:security Selector bits are binary-constrained in-circuit.
+ */
+template SafeMux2() {
+    signal input c[4];
+    signal input s[2];
+    signal output out;
+    s[0] * (s[0] - 1) === 0;
+    s[1] * (s[1] - 1) === 0;
+    component mux = Mux2();
+    for (var i = 0; i < 4; i++) {
+        mux.c[i] <== c[i];
+    }
+    mux.s[0] <== s[0];
+    mux.s[1] <== s[1];
+    out <== mux.out;
 }
