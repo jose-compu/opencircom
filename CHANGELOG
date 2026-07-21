@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0
+
+- Safe wrappers for binary-constrained building blocks (#15): `SafeAND()`, `SafeOR()`, `SafeMux1()`, `SafeMux2()`, `SafeBits2Num(n)` — enforce 0/1 on gate inputs, mux selectors, and bit arrays.
+- Raw `AND`/`OR`/`Mux1`/`Mux2`/`Bits2Num` marked building-block-only in docs; prefer Safe* for untrusted inputs.
+- Tests: functional + rejection cases for non-binary inputs (10 new tests).
+- Docs: README circuit table, SECURITY.md Safe* guidance, regenerated documentation.html.
+
 ## 0.7.0
 
 - MACI v1 building blocks: `MACICommandPack`, `MACICommandUnpack`, `MACICommandHash`, `MACISharedKeyHash`, `MACIMessageEncrypt`, `MACIMessageDecrypt`, `MACIMessageHash`, `MACIVoteCommit`, `MACIVoteDecryptVerify(n)` — command packing/h_cm per [MACI v1 spec](https://maci.pse.dev/docs/v1.2/spec); additive Poseidon keystream encryption; coordinator verify with allowlist + nonce. 8 tests.

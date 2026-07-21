@@ -305,7 +305,7 @@ function renderDocumentationHtml(byCat) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="OpenCircom v0.7.0 documentation — installation, CLI, Hardhat/Foundry integration, security, and full circuit template reference." />
+  <meta name="description" content="OpenCircom v0.8.0 documentation — installation, CLI, Hardhat/Foundry integration, security, and full circuit template reference." />
   <title>Documentation — OpenCircom</title>
   <link rel="icon" href="assets/img/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -342,12 +342,12 @@ function renderDocumentationHtml(byCat) {
       <header class="docs-header">
         <p class="section-label">Documentation</p>
         <h1>OpenCircom reference</h1>
-        <p class="docs-lead">v0.7.0 — ${templateCount} circuit templates, CLI tooling, integration guides, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
+        <p class="docs-lead">v0.8.0 — ${templateCount} circuit templates, CLI tooling, integration guides, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
       </header>
 
       <section class="docs-section" id="overview">
         <h2>Overview</h2>
-        <p>OpenCircom is a library of reusable <strong>Circom 2.x</strong> templates for zero-knowledge applications: hashing (Poseidon, MiMC, SHA-256), comparators, Merkle proofs, identity (Semaphore-style), voting, MACI v1 building blocks, and utilities. There is <strong>no dependency on circomlib</strong>; implementations are self-contained and covered by 153+ real Groth16 tests.</p>
+        <p>OpenCircom is a library of reusable <strong>Circom 2.x</strong> templates for zero-knowledge applications: hashing (Poseidon, MiMC, SHA-256), comparators, Merkle proofs, identity (Semaphore-style), voting, MACI v1 building blocks, and utilities. There is <strong>no dependency on circomlib</strong>; implementations are self-contained and covered by 163+ real Groth16 tests.</p>
         <p>Install via npm, add the circuits folder to your Circom include path (<code>-l</code>), and compose templates in your own circuits. Use the <a href="https://github.com/jose-compu/opencircom-hardhat-boilerplate" target="_blank" rel="noopener">Hardhat</a> or <a href="https://github.com/jose-compu/opencircom-foundry-boilerplate" target="_blank" rel="noopener">Foundry</a> boilerplates for a full compile → verifier → test pipeline.</p>
       </section>
 
@@ -355,7 +355,7 @@ function renderDocumentationHtml(byCat) {
         <h2>Installation</h2>
         <pre class="code-block"><code class="language-bash">npm install opencircom</code></pre>
         <p>Peer dependency: <strong>circom 2.x</strong> must be installed and available on <code>PATH</code>. OpenCircom does not bundle the compiler.</p>
-        <p>Package version: <code>^0.7.0</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
+        <p>Package version: <code>^0.8.0</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
       </section>
 
       <section class="docs-section" id="includes">
@@ -399,7 +399,7 @@ npx opencircom path</code></pre>
 
       <section class="docs-section" id="cli-ref">
         <h2>CLI reference</h2>
-        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+):</p>
+        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+; current <code>^0.8.0</code>):</p>
         <div class="docs-table-wrap">
           <table class="docs-table">
             <thead><tr><th>Command</th><th>Description</th></tr></thead>
@@ -429,10 +429,11 @@ npm test</code></pre>
         <h2>Security</h2>
         <ul class="docs-list">
           <li><strong>Range checks:</strong> Use <code>StrictNum2Bits(n)</code> or <code>RangeProof(n)</code> for untrusted inputs; <code>LessThan(n)</code> assumes inputs &lt; 2<sup>n</sup>.</li>
+          <li><strong>Binary selectors / bits:</strong> Prefer <code>SafeAND</code>, <code>SafeOR</code>, <code>SafeMux1</code>, <code>SafeMux2</code>, <code>SafeBits2Num(n)</code> for untrusted inputs. Raw AND/OR/Mux1/Mux2/Bits2Num are building blocks without binary constraints.</li>
           <li><strong>Merkle:</strong> <code>pathIndices[i]</code> are constrained binary in-circuit; <code>Switcher</code> constrains <code>sel</code> to {0,1}.</li>
           <li><strong>Nullifier:</strong> Use a unique <code>externalNullifier</code> per action to avoid cross-action replay.</li>
           <li><strong>Hashing:</strong> Poseidon uses standard Hades parameters; constants in <code>circuits/hashing/poseidon_constants.circom</code>.</li>
-          <li><strong>Audit (0.5.0):</strong> Binary constraints and range checks hardened in Switcher, ForceEqualIfEnabled, IncrementalMerkleInclusion, DivRem, and PadPKCS7.</li>
+          <li><strong>Audit (0.5.0) / Safe wrappers (0.8.0):</strong> Binary constraints and range checks hardened in Switcher, ForceEqualIfEnabled, IncrementalMerkleInclusion, DivRem, and PadPKCS7; Safe* templates added for gates, mux, and Bits2Num.</li>
           <li><strong>MACI:</strong> EdDSA, ECDH shared keys, and full DuplexSponge encryption remain off-circuit (coordinator layer). See <a href="https://maci.pse.dev/docs/v1.2/spec">MACI v1 spec</a>.</li>
         </ul>
         <p>Full notes: <a href="https://github.com/jose-compu/opencircom/blob/main/SECURITY.md">SECURITY.md</a> on GitHub.</p>
@@ -479,7 +480,7 @@ npm test</code></pre>
         <a href="https://www.npmjs.com/package/opencircom">npm</a>
         <a href="https://github.com/jose-compu/opencircom/blob/main/LICENSE">MIT License</a>
       </div>
-      <p class="footer-copy">OpenCircom v0.7.0 · Generated by <code>npm run docs</code></p>
+      <p class="footer-copy">OpenCircom v0.8.0 · Generated by <code>npm run docs</code></p>
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>

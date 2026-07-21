@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Circom](https://img.shields.io/badge/Circom-ZK%20Circuits-8B5CF6)](https://docs.circom.io/)
-[![Tests](https://img.shields.io/badge/tests-153%2B%20passing-success)](./test)
+[![Tests](https://img.shields.io/badge/tests-163%2B%20passing-success)](./test)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.x-brightgreen)](https://nodejs.org/)
 [![No circomlib](https://img.shields.io/badge/deps-no%20circomlib-informational)](./circuits)
 
@@ -54,7 +54,7 @@ From npm:
 npm install opencircom
 ```
 
-Or add to your `package.json`: `"opencircom": "^0.7.0"`.
+Or add to your `package.json`: `"opencircom": "^0.8.0"`.
 
 ### Hardhat
 
@@ -110,9 +110,9 @@ Output markdown is written to **docs/api/**; the HTML documentation page at **do
 | Comparators | `LessThan(n)`, `GreaterThan(n)`, `IsEqual()`, `IsZero()`, `AssertNotEqual()` | Range, equality, aliasing-safe (force a ≠ b). |
 | Comparators | `StrictNum2Bits(n)` | Num2Bits with in ∈ [0, 2^n−1] enforced. |
 | Comparators | `RangeProof(n)` | Prove a ≤ x ≤ b (inputs x, a, b; n-bit range). |
-| Bitify    | `Num2Bits(n)`, `Bits2Num(n)` | Bit decomposition (see also `compconstant.circom`, `aliascheck.circom`). |
-| Gates     | `AND`, `OR`, `NOT`, `XOR`, `MultiAND(n)` | Boolean gates. |
-| Utils     | `Mux1`, `Mux2`, `MuxN` / `SelectByIndex(N, nBits)`, `Switcher` | Multiplexer and conditional swap; N-way select by index. |
+| Bitify    | `Num2Bits(n)`, `Bits2Num(n)`, `SafeBits2Num(n)` | Bit decomposition; `SafeBits2Num` binary-constrains each bit (prefer for untrusted inputs). |
+| Gates     | `AND`, `OR`, `SafeAND`, `SafeOR`, `NOT`, `XOR`, `MultiAND(n)` | Boolean gates; `SafeAND`/`SafeOR` binary-constrain inputs. |
+| Utils     | `Mux1`, `Mux2`, `SafeMux1`, `SafeMux2`, `MuxN` / `SelectByIndex(N, nBits)`, `Switcher` | Multiplexer and conditional swap; Safe* muxes constrain selectors to {0,1}. |
 | Arithmetic | `Sum(n)`, `InnerProduct(n)`, `DivRem(n)`, `ExpByBits(n)` | Sum, dot product; safe div/rem; field exponentiation (exp as bits). |
 | Utils      | `PadBits(n, target)`, `OneOfN(n)`, `IndexOf(N, nBits)` | Zero-pad bits; 1 if value in array; prove index where arr[i]==value. |
 | Utils      | `Min2(n)`, `Max2(n)` | Minimum / maximum of two n-bit values. |
@@ -161,17 +161,18 @@ Planned or community-requested; not yet implemented:
 - **Set membership**: Accumulator-based membership implemented (`AccumulatorMembership(n)`, uses PoEVerify). Merkle/sparse already done.
 - **Payments**: Confidential transfer and mixer (deposit/withdraw) deferred to application repos; build with Merkle, Nullifier, BalanceProof from this lib.
 - **String & data**: UTF-8 validation and simple fixed/range patterns implemented; full regex and JSON field extraction deferred.
-- **Utilities**: Other padding or encoding schemes (e.g. ISO padding, length-prefix, base64 in-circuit) deferred; PadBits, PadBits10Star, PadPKCS7 remain.
+- **Utilities**: Other padding or encoding schemes (e.g. ISO padding, length-prefix, base64 in-circuit) deferred; PadBits, PadBits10Star, PadPKCS7 remain. Safe wrappers for gates/mux/Bits2Num implemented (`SafeAND`, `SafeOR`, `SafeMux1`, `SafeMux2`, `SafeBits2Num`).
 
 Contributions welcome; open an issue to propose or prioritize.
 
 ## Security
 
 - **Range checks**: Use `StrictNum2Bits(n)` or `RangeProof(n)` for untrusted inputs; `LessThan(n)` assumes inputs &lt; 2^n.
+- **Binary selectors / bits**: Prefer `SafeAND`, `SafeOR`, `SafeMux1`, `SafeMux2`, `SafeBits2Num(n)` when inputs may be untrusted. Raw `AND`/`OR`/`Mux1`/`Mux2`/`Bits2Num` are building blocks and do not binary-constrain inputs.
 - **Merkle**: `pathIndices[i]` are constrained binary in-circuit; `Switcher` constrains `sel` to {0,1}.
 - **Nullifier**: Use a unique `externalNullifier` per action to avoid cross-action replay.
 - **Hashing**: Poseidon uses standard Hades parameters (same as circomlib); constants in `circuits/hashing/poseidon_constants.circom`.
-- **Audit**: An internal security audit (0.5.0) fixed binary constraints and range checks in Switcher, ForceEqualIfEnabled, IncrementalMerkleInclusion, DivRem, and PadPKCS7. See [CHANGELOG](CHANGELOG) for details.
+- **Audit**: An internal security audit (0.5.0) fixed binary constraints and range checks in Switcher, ForceEqualIfEnabled, IncrementalMerkleInclusion, DivRem, and PadPKCS7. Safe* wrappers added in 0.8.0. See [CHANGELOG](CHANGELOG) for details.
 
 See [SECURITY.md](SECURITY.md) for more.
 
@@ -204,7 +205,7 @@ From this repo, `npm run compile:test` compiles every file in `test/circuits/` b
 
 Tests use **real** ZK where applicable: circuits are compiled with Circom, then a small Powers of Tau and zkey are generated, and a Groth16 proof is created and verified with snarkjs (no mocks).
 
-**Coverage** (153+ tests): Poseidon, PoseidonEncrypt, SHA-256, Comparators, IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates, Bitify, Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2, MuxN, Arithmetic (incl. PoEVerify), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, MACI, and one full Groth16 prove/verify.
+**Coverage** (163+ tests): Poseidon, PoseidonEncrypt, SHA-256, Comparators, IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates (incl. SafeAND/SafeOR), Bitify (incl. SafeBits2Num), Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2/SafeMux1/SafeMux2, MuxN, Arithmetic (incl. PoEVerify), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, MACI, and one full Groth16 prove/verify.
 
 ```bash
 npm install

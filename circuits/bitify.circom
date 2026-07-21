@@ -27,10 +27,11 @@ template Num2Bits(n) {
 /**
  * @title Bits2Num
  * @notice Recomposes n bits into a single field element.
- * @dev out = sum(in[i]*2^i). No binary check on in[i]; use with Num2Bits or constrain inputs elsewhere.
+ * @dev Building-block-only: no binary check on in[i]. Prefer SafeBits2Num when bits may be untrusted.
  * @param n Number of bits.
- * @custom:input in[n] Bits (in[0] = LSB).
+ * @custom:input in[n] Bits (in[0] = LSB; not binary-enforced here).
  * @custom:output out Field element.
+ * @custom:security Prefer SafeBits2Num(n) when in[i] may be untrusted.
  */
 template Bits2Num(n) {
     signal input in[n];
@@ -42,6 +43,29 @@ template Bits2Num(n) {
         e2 = e2 + e2;
     }
     lc1 ==> out;
+}
+
+/**
+ * @title SafeBits2Num
+ * @notice Recomposes n bits into a field element with each bit binary-constrained.
+ * @dev Wraps Bits2Num(n) and enforces in[i]*(in[i]-1)===0 for all i. Prefer over Bits2Num for untrusted bit arrays.
+ * @param n Number of bits.
+ * @custom:input in[n] Bits (in[0] = LSB; each constrained to 0 or 1).
+ * @custom:output out Field element.
+ * @custom:complexity O(n): n binary constraints + Bits2Num.
+ * @custom:security Bit inputs are binary-constrained in-circuit.
+ */
+template SafeBits2Num(n) {
+    signal input in[n];
+    signal output out;
+    for (var i = 0; i < n; i++) {
+        in[i] * (in[i] - 1) === 0;
+    }
+    component b2n = Bits2Num(n);
+    for (var i = 0; i < n; i++) {
+        b2n.in[i] <== in[i];
+    }
+    out <== b2n.out;
 }
 
 /**
