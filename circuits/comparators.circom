@@ -210,6 +210,9 @@ template AgeThresholdProof(n) {
     component snbAge = StrictNum2Bits(n);
     snbAge.in <== age;
 
+    component snbMinAge = StrictNum2Bits(n);
+    snbMinAge.in <== minAge;
+
     component geq = GreaterEqThan(n);
     geq.in[0] <== age;
     geq.in[1] <== minAge;
