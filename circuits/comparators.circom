@@ -172,3 +172,49 @@ template RangeProof(n) {
     leq.out === 1;
     out <== 1;
 }
+
+/**
+ * @title AgeThresholdProof
+ * @notice Proves currentYear - birthYear >= minAge without revealing birthYear.
+ * @dev Uses StrictNum2Bits to enforce year ranges; GreaterEqThan for age comparison.
+ *      The intermediate signal `age` is also StrictNum2Bits-checked, which catches
+ *      underflow when birthYear > currentYear. minAge is not range-checked (typically
+ *      a small public constant like 18 or 21).
+ * @param n Bit width for years (must be ≤ 251 and ≥ ceil(log2(currentYear+1))).
+ *          Use n=32 for years up to ~2106.
+ * @custom:input birthYear Private birth year.
+ * @custom:input currentYear Current year (public when sourced from chain timestamp or oracle).
+ * @custom:input minAge Minimum age threshold (public, e.g. 18).
+ * @custom:output valid 1 if currentYear - birthYear >= minAge, else 0.
+ * @custom:complexity 3×StrictNum2Bits(n) + 1×GreaterEqThan(n): ~3n + n + 2 constraints ≡ O(n).
+ * @custom:security If currentYear is prover-supplied (private), the prover can forge a valid
+ *                  proof for any birthYear. Always source currentYear from a trusted context
+ *                  (e.g. block.timestamp in a smart contract). See SECURITY.md for details.
+ */
+template AgeThresholdProof(n) {
+    assert(n <= 251);
+    signal input birthYear;
+    signal input currentYear;
+    signal input minAge;
+    signal output valid;
+
+    component snbBirth = StrictNum2Bits(n);
+    snbBirth.in <== birthYear;
+
+    component snbCurrent = StrictNum2Bits(n);
+    snbCurrent.in <== currentYear;
+
+    signal age;
+    age <== currentYear - birthYear;
+
+    component snbAge = StrictNum2Bits(n);
+    snbAge.in <== age;
+
+    component snbMinAge = StrictNum2Bits(n);
+    snbMinAge.in <== minAge;
+
+    component geq = GreaterEqThan(n);
+    geq.in[0] <== age;
+    geq.in[1] <== minAge;
+    valid <== geq.out;
+}
