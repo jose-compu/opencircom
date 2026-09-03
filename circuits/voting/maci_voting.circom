@@ -290,7 +290,7 @@ template MACIVoteCommit() {
  * @custom:input packed Decrypted command prefix p from plaintext[0].
  * @custom:input voteOption, nonce, voteWeight, pollId, stateIndex — unpacked command fields.
  * @custom:input expectedPollId Public poll id from contract.
- * @custom:input minValidNonce Minimum valid nonce from ballot (blt_n + 1 in MACI).
+ * @custom:input minValidNonce Minimum valid nonce from ballot (blt_n + 1 in MACI); constrained to 50 bits.
  * @custom:input allowedVoteOptions[n] Valid vote option indices.
  * @custom:output valid 1 if all checks pass.
  */
@@ -333,6 +333,10 @@ template MACIVoteDecryptVerify(n) {
     component eqExpectedPoll = IsEqual();
     eqExpectedPoll.in[0] <== pollId;
     eqExpectedPoll.in[1] <== expectedPollId;
+
+    // nonce is 50-bit via unpack; minValidNonce is an untrusted public input.
+    component strictMinNonce = StrictNum2Bits(50);
+    strictMinNonce.in <== minValidNonce;
 
     component nonceOk = GreaterEqThan(50);
     nonceOk.in[0] <== nonce;

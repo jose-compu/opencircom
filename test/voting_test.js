@@ -102,6 +102,26 @@ describe("Voting (commit-reveal, nullifier)", function () {
       }
     });
 
+    it("fails when choice wraps LessThan(32) over Fr (p - 2^32 + numChoices)", async () => {
+      // BN254 scalar field. Without StrictNum2Bits, LessThan(32) accepts this as < numChoices.
+      const p = 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
+      const numChoices = 5n;
+      const choice = (p - (1n << 32n) + numChoices).toString();
+      const revealIdentity = 1;
+      const salt = 2;
+      const ballotId = 3;
+      const commitment = await poseidon4(poseidon4Circuit, choice, revealIdentity, salt, ballotId);
+      try {
+        await commitCircuit.calculateWitness(
+          { choice, revealIdentity, salt, ballotId, commitment },
+          true
+        );
+        assert.fail("should have thrown for Fr-wraparound choice");
+      } catch (e) {
+        assert.isOk(e);
+      }
+    });
+
     it("same inputs give same commitment", async () => {
       const choice = 1;
       const revealIdentity = 100;

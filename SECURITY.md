@@ -36,12 +36,19 @@
 ### Nullifier
 
 - `Nullifier(secret, externalNullifier)` is for one-time use per (`secret`, externalNullifier). Use a unique `externalNullifier` per action (e.g. poll id, withdrawal nonce).
+- `externalNullifier` and `ballotId` are Poseidon inputs (field elements). Distinct Fr values already hash distinctly; a bit-width bound does not add uniqueness.
+
+### Voting (`VoteCommit`, `VoteReveal`)
+
+- `VoteCommit(numChoices)` alias-checks `choice` with `StrictNum2Bits(32)` before `LessThan(32)`. Do not compare untrusted values with `LessThan(n)` alone (wraparound over Fr can satisfy `out === 1` for `choice >= 2^n`).
+- `VoteReveal` binds `choice` via `Poseidon(choice, identity, salt, ballotId) === commitment`. Enforce the ballot range at commit (or in the contract). `ballotId` uniqueness is an application-layer requirement.
 
 ### MACI building blocks
 
 - **Off-circuit coordinator**: Baby JubJub ECDH shared key, EdDSA sign `h_cm`, full MACI DuplexSponge encryption, message batch processing, and state/ballot tree updates remain application-layer ([MACI v1 spec](https://maci.pse.dev/docs/v1.2/spec)).
 - **In-circuit encryption** uses additive Poseidon keystream, not MACI DuplexSponge; interoperable command packing and `h_cm` match MACI v1.
-- **`MACIVoteDecryptVerify`**: enforce `minValidNonce` from ballot state; reject votes outside `allowedVoteOptions`; bind `expectedPollId`.
+- **`MACIVoteDecryptVerify`**: enforce `minValidNonce` from ballot state (in-circuit: `StrictNum2Bits(50)` then `GreaterEqThan(50)`); reject votes outside `allowedVoteOptions`; bind `expectedPollId`.
+- Ciphertext limbs are field elements from additive Poseidon keystream; they are not n-bit integers and must not be range-clipped.
 - **Nonce monotonicity**: MACI applies messages in reverse order; coordinator must track ballot nonces correctly.
 
 ## Audits
