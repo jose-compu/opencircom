@@ -10,7 +10,7 @@
   "scripts": {
     "setup:zk": "bash scripts/setup_zk_tests.sh",
     "compile:test": "bash scripts/compile_test_circuits.sh",
-    "test": "npm run compile:test && npm run setup:zk && mocha test/*.js --timeout 120000",
+    "test": "npm run compile:test && npm run setup:zk && mocha",
     "docs": "node scripts/gen_docs.js"
   },
   "keywords": ["circom", "zk", "zero-knowledge", "snark", "poseidon", "merkle", "circuit"],
