@@ -267,6 +267,34 @@ describe("MACI vote building blocks (opencircom)", function () {
       assert.equal(w[1].toString(), "0");
     });
 
+    it("fails when minValidNonce is not a 50-bit integer", async () => {
+      const stateIndex = 1;
+      const voteOption = 2;
+      const nonce = 3;
+      const voteWeight = 1;
+      const pollId = 10;
+      const packed = maciPack(stateIndex, voteOption, nonce, voteWeight, pollId);
+      try {
+        await decryptVerifyCircuit.calculateWitness(
+          {
+            packed,
+            voteOption,
+            nonce,
+            voteWeight,
+            pollId,
+            stateIndex,
+            expectedPollId: pollId,
+            minValidNonce: (1n << 50n).toString(),
+            allowedVoteOptions: [0, 2, 5],
+          },
+          true
+        );
+        assert.fail("should have thrown for minValidNonce >= 2^50");
+      } catch (e) {
+        assert.isOk(e);
+      }
+    });
+
     it("fails when nonce below minValidNonce", async () => {
       const stateIndex = 1;
       const voteOption = 2;

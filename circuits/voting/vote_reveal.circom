@@ -14,7 +14,7 @@ include "../merkle/merkle_inclusion.circom";
  * @custom:input commitment Commitment (must equal H(choice, identity, salt, ballotId)).
  * @custom:output nullifierHash Nullifier hash for double-vote prevention.
  * @custom:complexity Poseidon(4) + Poseidon(2) + Nullifier(1): ~780 constraints. Dominated by hashes.
- * @custom:security Contract must verify commitment was in committed set and nullifier not already spent. Same (identity, salt, ballotId) yields same nullifier (double-vote detection).
+ * @custom:security Contract must verify commitment was in committed set and nullifier not already spent. Same (identity, salt, ballotId) yields same nullifier (double-vote detection). choice is bound by the Poseidon commitment (range-checked in VoteCommit); ballotId is a field-element hash input.
  */
 template VoteReveal() {
     signal input choice;
