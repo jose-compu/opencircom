@@ -274,6 +274,7 @@ describe("MACI vote building blocks (opencircom)", function () {
       const voteWeight = 1;
       const pollId = 10;
       const packed = maciPack(stateIndex, voteOption, nonce, voteWeight, pollId);
+      let rejected = false;
       try {
         await decryptVerifyCircuit.calculateWitness(
           {
@@ -289,10 +290,10 @@ describe("MACI vote building blocks (opencircom)", function () {
           },
           true
         );
-        assert.fail("should have thrown for minValidNonce >= 2^50");
       } catch (e) {
-        assert.isOk(e);
+        rejected = true;
       }
+      assert.isTrue(rejected, "should have thrown for minValidNonce >= 2^50");
     });
 
     it("fails when nonce below minValidNonce", async () => {

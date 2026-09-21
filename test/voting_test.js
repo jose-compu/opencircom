@@ -111,15 +111,16 @@ describe("Voting (commit-reveal, nullifier)", function () {
       const salt = 2;
       const ballotId = 3;
       const commitment = await poseidon4(poseidon4Circuit, choice, revealIdentity, salt, ballotId);
+      let rejected = false;
       try {
         await commitCircuit.calculateWitness(
           { choice, revealIdentity, salt, ballotId, commitment },
           true
         );
-        assert.fail("should have thrown for Fr-wraparound choice");
       } catch (e) {
-        assert.isOk(e);
+        rejected = true;
       }
+      assert.isTrue(rejected, "should have thrown for Fr-wraparound choice");
     });
 
     it("same inputs give same commitment", async () => {
