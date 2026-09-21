@@ -63,4 +63,11 @@ describe("ZK real (Groth16 prove & verify)", function () {
     const ok = await snarkjs.groth16.verify(vkey, publicSignals, proof);
     assert.isTrue(ok, "Groth16 verify must pass for valid proof");
   });
+
+  after(async function () {
+    // ffjavascript/snarkjs keep a curve worker open after prove/verify.
+    if (globalThis.curve_bn128) {
+      await globalThis.curve_bn128.terminate();
+    }
+  });
 });

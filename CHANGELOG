@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Security: `VoteCommit` now `StrictNum2Bits(32)`-bounds `choice` before `LessThan(32)` (Fr wraparound could previously satisfy the range check). `#36`
+- Security: `MACIVoteDecryptVerify` range-checks `minValidNonce` with `StrictNum2Bits(50)` before `GreaterEqThan(50)`. `#36`
+
 ## 0.8.0
 
 - Safe wrappers for binary-constrained building blocks (#15): `SafeAND()`, `SafeOR()`, `SafeMux1()`, `SafeMux2()`, `SafeBits2Num(n)` — enforce 0/1 on gate inputs, mux selectors, and bit arrays.

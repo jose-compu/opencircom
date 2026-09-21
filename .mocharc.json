@@ -1,0 +1,5 @@
+{
+  "timeout": 120000,
+  "exit": true,
+  "spec": "test/*.js"
+}

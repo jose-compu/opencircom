@@ -14,15 +14,20 @@ include "../utils.circom";
  * @custom:input salt Random salt.
  * @custom:input ballotId Ballot identifier.
  * @custom:input commitment Public commitment (must match H(choice, revealIdentity, salt, ballotId)).
- * @custom:complexity LessThan(32) + Poseidon(4): ~330 constraints. Keep numChoices within 32-bit range.
- * @custom:security Commitment must be published and stored for reveal. choice in [0, numChoices) enforced; ensure ballotId is unique per ballot.
+ * @custom:complexity StrictNum2Bits(32) + LessThan(32) + Poseidon(4): ~370 constraints. Keep numChoices within 32-bit range.
+ * @custom:security Commitment must be published and stored for reveal. choice is alias-checked into [0, 2^32) then constrained to [0, numChoices). ballotId is a Poseidon input (field element); uniqueness is an application/contract concern.
  */
 template VoteCommit(numChoices) {
+    assert(numChoices >= 1 && numChoices < (1 << 32));
     signal input choice;
     signal input revealIdentity;
     signal input salt;
     signal input ballotId;
     signal input commitment;
+
+    // LessThan(32) is unsound unless both inputs are in [0, 2^32).
+    component strictChoice = StrictNum2Bits(32);
+    strictChoice.in <== choice;
 
     component range = LessThan(32);
     range.in[0] <== choice;
