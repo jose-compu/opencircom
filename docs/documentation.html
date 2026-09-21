@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="OpenCircom v0.8.0 documentation — installation, CLI, Hardhat/Foundry integration, security, and full circuit template reference." />
+  <meta name="description" content="OpenCircom v0.8.1 documentation — installation, CLI, Hardhat/Foundry integration, security, and full circuit template reference." />
   <title>Documentation — OpenCircom</title>
   <link rel="icon" href="assets/img/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -40,7 +40,7 @@
       <header class="docs-header">
         <p class="section-label">Documentation</p>
         <h1>OpenCircom reference</h1>
-        <p class="docs-lead">v0.8.0 — 101 circuit templates, CLI tooling, integration guides, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
+        <p class="docs-lead">v0.8.1 — 101 circuit templates, CLI tooling, integration guides, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
       </header>
 
       <section class="docs-section" id="overview">
@@ -53,7 +53,7 @@
         <h2>Installation</h2>
         <pre class="code-block"><code class="language-bash">npm install opencircom</code></pre>
         <p>Peer dependency: <strong>circom 2.x</strong> must be installed and available on <code>PATH</code>. OpenCircom does not bundle the compiler.</p>
-        <p>Package version: <code>^0.8.0</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
+        <p>Package version: <code>^0.8.1</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
       </section>
 
       <section class="docs-section" id="includes">
@@ -97,7 +97,7 @@ npx opencircom path</code></pre>
 
       <section class="docs-section" id="cli-ref">
         <h2>CLI reference</h2>
-        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+; current <code>^0.8.0</code>):</p>
+        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+; current <code>^0.8.1</code>):</p>
         <div class="docs-table-wrap">
           <table class="docs-table">
             <thead><tr><th>Command</th><th>Description</th></tr></thead>
@@ -131,7 +131,7 @@ npm test</code></pre>
           <li><strong>Merkle:</strong> <code>pathIndices[i]</code> are constrained binary in-circuit; <code>Switcher</code> constrains <code>sel</code> to {0,1}.</li>
           <li><strong>Nullifier:</strong> Use a unique <code>externalNullifier</code> per action to avoid cross-action replay.</li>
           <li><strong>Hashing:</strong> Poseidon uses standard Hades parameters; constants in <code>circuits/hashing/poseidon_constants.circom</code>.</li>
-          <li><strong>Audit (0.5.0) / Safe wrappers (0.8.0):</strong> Binary constraints and range checks hardened in Switcher, ForceEqualIfEnabled, IncrementalMerkleInclusion, DivRem, and PadPKCS7; Safe* templates added for gates, mux, and Bits2Num.</li>
+          <li><strong>Audit (0.5.0) / Safe wrappers (0.8.0) / range checks (0.8.1):</strong> Binary constraints and range checks hardened in Switcher, ForceEqualIfEnabled, IncrementalMerkleInclusion, DivRem, and PadPKCS7; Safe* templates added for gates, mux, and Bits2Num; VoteCommit choice and MACI nonce bounded against Fr wraparound.</li>
           <li><strong>MACI:</strong> EdDSA, ECDH shared keys, and full DuplexSponge encryption remain off-circuit (coordinator layer). See <a href="https://maci.pse.dev/docs/v1.2/spec">MACI v1 spec</a>.</li>
         </ul>
         <p>Full notes: <a href="https://github.com/jose-compu/opencircom/blob/main/SECURITY.md">SECURITY.md</a> on GitHub.</p>
@@ -1057,16 +1057,16 @@ npm test</code></pre>
 <p class="template-dev"><strong>Dev:</strong> Decrypt off-circuit (or via MACIMessageDecrypt), then prove voteOption in allowlist,</p>
 <dl class="template-dl">
 <dt>Parameters</dt><dd><ul><li><code>n</code> — Number of allowed vote options.</li></ul></dd>
-<dt>Inputs</dt><dd><ul><li><code>packed</code> — Decrypted command prefix p from plaintext[0].</li><li><code>voteOption</code></li><li><code>nonce</code></li><li><code>voteWeight</code></li><li><code>pollId</code></li><li><code>stateIndex</code></li><li><code>expectedPollId</code> — Public poll id from contract.</li><li><code>minValidNonce</code> — Minimum valid nonce from ballot (blt_n + 1 in MACI).</li><li><code>allowedVoteOptions[n]</code></li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>packed</code> — Decrypted command prefix p from plaintext[0].</li><li><code>voteOption</code></li><li><code>nonce</code></li><li><code>voteWeight</code></li><li><code>pollId</code></li><li><code>stateIndex</code></li><li><code>expectedPollId</code> — Public poll id from contract.</li><li><code>minValidNonce</code> — Minimum valid nonce from ballot (blt_n + 1 in MACI); constrained to 50 bits.</li><li><code>allowedVoteOptions[n]</code></li></ul></dd>
 <dt>Outputs</dt><dd><ul><li><code>valid</code> — 1 if all checks pass.</li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/voting/maci_voting.circom</code></p>
 </article>
-<article class="template-doc" id="VoteCommit-voting-vote_commit-circom" data-search="votecommit commit phase: proves commitment = h(choice, revealidentity, salt, ballotid) and choice in [0, numchoices). voting/vote_commit.circom numchoices lessthan(32) + poseidon(4): ~330 constraints. keep numchoices within 32-bit range. commitment must be published and stored for reveal. choice in [0, numchoices) enforced; ensure ballotid is unique per ballot. public input: commitment (contract stores it for reveal phase). use with votereveal for anonymous 1-of-n voting. numchoices number of choices (choice must be &lt; numchoices). choice revealidentity salt ballotid commitment">
+<article class="template-doc" id="VoteCommit-voting-vote_commit-circom" data-search="votecommit commit phase: proves commitment = h(choice, revealidentity, salt, ballotid) and choice in [0, numchoices). voting/vote_commit.circom numchoices strictnum2bits(32) + lessthan(32) + poseidon(4): ~370 constraints. keep numchoices within 32-bit range. commitment must be published and stored for reveal. choice is alias-checked into [0, 2^32) then constrained to [0, numchoices). ballotid is a poseidon input (field element); uniqueness is an application/contract concern. public input: commitment (contract stores it for reveal phase). use with votereveal for anonymous 1-of-n voting. numchoices number of choices (choice must be &lt; numchoices). choice revealidentity salt ballotid commitment">
 <h3 class="template-name"><code>VoteCommit(numChoices)</code></h3>
 <p class="template-notice">Commit phase: proves commitment = H(choice, revealIdentity, salt, ballotId) and choice in [0, numChoices).</p>
 <p class="template-dev"><strong>Dev:</strong> Public input: commitment (contract stores it for reveal phase). Use with VoteReveal for anonymous 1-of-N voting.</p>
-<p class="template-meta"><strong>Complexity:</strong> LessThan(32) + Poseidon(4): ~330 constraints. Keep numChoices within 32-bit range.</p>
-<p class="template-meta template-security"><strong>Security:</strong> Commitment must be published and stored for reveal. choice in [0, numChoices) enforced; ensure ballotId is unique per ballot.</p>
+<p class="template-meta"><strong>Complexity:</strong> StrictNum2Bits(32) + LessThan(32) + Poseidon(4): ~370 constraints. Keep numChoices within 32-bit range.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Commitment must be published and stored for reveal. choice is alias-checked into [0, 2^32) then constrained to [0, numChoices). ballotId is a Poseidon input (field element); uniqueness is an application/contract concern.</p>
 <dl class="template-dl">
 <dt>Parameters</dt><dd><ul><li><code>numChoices</code> — Number of choices (choice must be &lt; numChoices).</li></ul></dd>
 <dt>Inputs</dt><dd><ul><li><code>choice</code> — Voter's choice (private).</li><li><code>revealIdentity</code> — Identity used in reveal.</li><li><code>salt</code> — Random salt.</li><li><code>ballotId</code> — Ballot identifier.</li><li><code>commitment</code> — Public commitment (must match H(choice, revealIdentity, salt, ballotId)).</li></ul></dd>
@@ -1083,12 +1083,12 @@ npm test</code></pre>
 <dt>Outputs</dt><dd><ul><li><em>from template body</em></li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/voting/vote_commit.circom</code></p>
 </article>
-<article class="template-doc" id="VoteReveal-voting-vote_reveal-circom" data-search="votereveal reveal phase: proves (choice, identity, salt, ballotid) match commitment and outputs nullifier for double-vote prevention. voting/vote_reveal.circom poseidon(4) + poseidon(2) + nullifier(1): ~780 constraints. dominated by hashes. contract must verify commitment was in committed set and nullifier not already spent. same (identity, salt, ballotid) yields same nullifier (double-vote detection). nullifier = h(h(identity, salt), ballotid). contract must check commitment was in the committed set and nullifier not yet spent. choice identity salt ballotid commitment nullifierhash">
+<article class="template-doc" id="VoteReveal-voting-vote_reveal-circom" data-search="votereveal reveal phase: proves (choice, identity, salt, ballotid) match commitment and outputs nullifier for double-vote prevention. voting/vote_reveal.circom poseidon(4) + poseidon(2) + nullifier(1): ~780 constraints. dominated by hashes. contract must verify commitment was in committed set and nullifier not already spent. same (identity, salt, ballotid) yields same nullifier (double-vote detection). choice is bound by the poseidon commitment (range-checked in votecommit); ballotid is a field-element hash input. nullifier = h(h(identity, salt), ballotid). contract must check commitment was in the committed set and nullifier not yet spent. choice identity salt ballotid commitment nullifierhash">
 <h3 class="template-name"><code>VoteReveal()</code></h3>
 <p class="template-notice">Reveal phase: proves (choice, identity, salt, ballotId) match commitment and outputs nullifier for double-vote prevention.</p>
 <p class="template-dev"><strong>Dev:</strong> Nullifier = H(H(identity, salt), ballotId). Contract must check commitment was in the committed set and nullifier not yet spent.</p>
 <p class="template-meta"><strong>Complexity:</strong> Poseidon(4) + Poseidon(2) + Nullifier(1): ~780 constraints. Dominated by hashes.</p>
-<p class="template-meta template-security"><strong>Security:</strong> Contract must verify commitment was in committed set and nullifier not already spent. Same (identity, salt, ballotId) yields same nullifier (double-vote detection).</p>
+<p class="template-meta template-security"><strong>Security:</strong> Contract must verify commitment was in committed set and nullifier not already spent. Same (identity, salt, ballotId) yields same nullifier (double-vote detection). choice is bound by the Poseidon commitment (range-checked in VoteCommit); ballotId is a field-element hash input.</p>
 <dt>Inputs</dt><dd><ul><li><code>choice</code> — Voter's choice.</li><li><code>identity</code> — Voter identity.</li><li><code>salt</code> — Salt (must match commit phase).</li><li><code>ballotId</code> — Ballot identifier.</li><li><code>commitment</code> — Commitment (must equal H(choice, identity, salt, ballotId)).</li></ul></dd>
 <dt>Outputs</dt><dd><ul><li><code>nullifierHash</code> — Nullifier hash for double-vote prevention.</li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/voting/vote_reveal.circom</code></p>
@@ -1138,7 +1138,7 @@ npm test</code></pre>
         <a href="https://www.npmjs.com/package/opencircom">npm</a>
         <a href="https://github.com/jose-compu/opencircom/blob/main/LICENSE">MIT License</a>
       </div>
-      <p class="footer-copy">OpenCircom v0.8.0 · Generated by <code>npm run docs</code></p>
+      <p class="footer-copy">OpenCircom v0.8.1 · Generated by <code>npm run docs</code></p>
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>

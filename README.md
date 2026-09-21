@@ -54,7 +54,7 @@ From npm:
 npm install opencircom
 ```
 
-Or add to your `package.json`: `"opencircom": "^0.8.0"`.
+Or add to your `package.json`: `"opencircom": "^0.8.1"`.
 
 ### Hardhat
 
@@ -172,7 +172,7 @@ Contributions welcome; open an issue to propose or prioritize.
 - **Merkle**: `pathIndices[i]` are constrained binary in-circuit; `Switcher` constrains `sel` to {0,1}.
 - **Nullifier**: Use a unique `externalNullifier` per action to avoid cross-action replay.
 - **Hashing**: Poseidon uses standard Hades parameters (same as circomlib); constants in `circuits/hashing/poseidon_constants.circom`.
-- **Audit**: An internal security audit (0.5.0) fixed binary constraints and range checks in Switcher, ForceEqualIfEnabled, IncrementalMerkleInclusion, DivRem, and PadPKCS7. Safe* wrappers added in 0.8.0. See [CHANGELOG](CHANGELOG) for details.
+- **Audit**: An internal security audit (0.5.0) fixed binary constraints and range checks in Switcher, ForceEqualIfEnabled, IncrementalMerkleInclusion, DivRem, and PadPKCS7. Safe* wrappers added in 0.8.0. VoteCommit choice and MACI nonce range checks hardened in 0.8.1. See [CHANGELOG](CHANGELOG) for details.
 
 See [SECURITY.md](SECURITY.md) for more.
 
