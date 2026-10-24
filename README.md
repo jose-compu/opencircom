@@ -168,6 +168,8 @@ Planned or community-requested; not yet implemented:
 
 Contributions welcome; open an issue to propose or prioritize.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the circuit/test workflow, and the PR checklist.
+
 ## Security
 
 - **Range checks**: Use `StrictNum2Bits(n)` or `RangeProof(n)` for untrusted inputs; `LessThan(n)` assumes inputs &lt; 2^n.
