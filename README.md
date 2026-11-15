@@ -218,6 +218,10 @@ npm test
 
 `npm test` runs `compile:test` (all test circuits), then `setup:zk` (ptau + zkey). First run can take about a minute.
 
+## Releases
+
+Pushing a semver tag `vX.Y.Z` (matching `package.json`) triggers [`.github/workflows/publish.yml`](.github/workflows/publish.yml), which runs the same Circom-backed test suite as CI and publishes `opencircom` to npm with [Trusted Publishing](https://docs.npmjs.com/trusted-publishers) (OIDC, no `NPM_TOKEN`). Older versions can be backfilled via **Actions → Publish → Run workflow** on `main`, with **ref** set to the tag (e.g. `v0.8.1`); the job checks out that tag while the workflow definition stays on `main`.
+
 ## License
 
 MIT

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- CI: GitHub Actions `publish.yml` publishes `opencircom` to npm on `v*.*.*` tags (OIDC Trusted Publishing, provenance) and via manual `workflow_dispatch` with an optional ref checkout.
+
 ## 0.9.1
 
 - DevDependencies: `circom_tester` 0.0.21 → 0.0.24, `mocha` 10.x → 11.8.x, `snarkjs` 0.7.5 → 0.7.6, `chai` range to 4.5.x (chai 5/6 are ESM-only and would break `require()` tests).

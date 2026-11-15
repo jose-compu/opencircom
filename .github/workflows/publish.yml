@@ -1,0 +1,105 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to checkout and publish (e.g. v0.8.1). Omit to use the default branch."
+        required: false
+        type: string
+
+concurrency:
+  group: publish-${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref != '' && inputs.ref || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Upgrade npm for Trusted Publishing
+        run: npm install -g 'npm@">=11.5.1 <12"'
+
+      - name: Install Circom
+        run: |
+          set -euxo pipefail
+          curl -fsSL -o /tmp/circom \
+            https://github.com/iden3/circom/releases/download/v2.2.3/circom-linux-amd64
+          chmod +x /tmp/circom
+          sudo mv /tmp/circom /usr/local/bin/circom
+          circom --version
+
+      - name: Install npm dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Compile test circuits, setup ZK, run mocha
+        run: npm test
+
+      - name: Verify package version matches release tag
+        run: |
+          set -euo pipefail
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+            EXPECTED="${TAG#v}"
+            if [ "$PKG_VERSION" != "$EXPECTED" ]; then
+              echo "package.json version ($PKG_VERSION) does not match tag ($TAG → expected $EXPECTED)"
+              exit 1
+            fi
+            echo "Publishing version $PKG_VERSION for tag $TAG"
+          elif [ -n "${{ inputs.ref }}" ]; then
+            REF="${{ inputs.ref }}"
+            EXPECTED="${REF#v}"
+            if [ "$PKG_VERSION" != "$EXPECTED" ]; then
+              echo "package.json version ($PKG_VERSION) does not match ref ($REF → expected $EXPECTED)"
+              exit 1
+            fi
+            echo "Publishing version $PKG_VERSION for ref $REF"
+          else
+            echo "Publishing version $PKG_VERSION from default checkout (no ref input)"
+          fi
+          echo "version=$PKG_VERSION" >> "$GITHUB_ENV"
+
+      - name: Publish to npm
+        run: |
+          set -euo pipefail
+          LATEST="$(npm view opencircom version)"
+          echo "npm latest: $LATEST; publishing: $version"
+          if [ "$(printf '%s\n' "$LATEST" "$version" | sort -V | head -n1)" = "$version" ] && [ "$version" != "$LATEST" ]; then
+            echo "Version $version is older than npm latest ($LATEST); publishing with dist-tag backfill"
+            npm publish --provenance --access public --tag backfill
+          else
+            npm publish --provenance --access public
+          fi
+
+      - name: Confirm publication on npm
+        run: |
+          set -euo pipefail
+          PUBLISHED="$(npm view "opencircom@${version}" version)"
+          if [ "$PUBLISHED" != "$version" ]; then
+            echo "Expected opencircom@${version} to be $version, got $PUBLISHED"
+            exit 1
+          fi
+          echo "Confirmed opencircom@${version} on npm"
