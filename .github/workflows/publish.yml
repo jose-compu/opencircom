@@ -40,7 +40,9 @@ jobs:
           cache: npm
 
       - name: Upgrade npm for Trusted Publishing
-        run: npm install -g 'npm@">=11.5.1 <12"'
+        run: |
+          npm install -g "npm@>=11.5.1 <12"
+          npm --version
 
       - name: Install Circom
         run: |
