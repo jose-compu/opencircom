@@ -15,15 +15,13 @@ on:
         required: false
         type: string
 
-permissions:
-  contents: read
-  id-token: write
-
 jobs:
   resolve:
     name: resolve-version
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.pkg.outputs.version }}
       already_published: ${{ steps.guard.outputs.already_published }}
@@ -37,7 +35,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 20
-          registry-url: https://registry.npmjs.org
           cache: npm
 
       - name: Read package version
@@ -67,6 +64,9 @@ jobs:
     if: needs.resolve.outputs.already_published != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: read
+      id-token: write
     concurrency:
       group: publish-npm-${{ needs.resolve.outputs.version }}
       cancel-in-progress: false
@@ -83,7 +83,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 20
-          registry-url: https://registry.npmjs.org
           cache: npm
 
       - name: Upgrade npm for Trusted Publishing
@@ -139,6 +138,19 @@ jobs:
           else
             echo "skip_publish=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Assert OIDC-only npm config (no token .npmrc)
+        if: steps.recheck.outputs.skip_publish != 'true'
+        run: |
+          set -euo pipefail
+          for f in "$HOME/.npmrc" .npmrc; do
+            if [ -f "$f" ] && grep -qF '_authToken' "$f"; then
+              echo "Token-based auth found in $f; Trusted Publishing (OIDC) only."
+              exit 1
+            fi
+          done
+          npm --version
+          npm config get registry
 
       - name: Publish to npm
         if: steps.recheck.outputs.skip_publish != 'true'
