@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- CI: `publish.yml` also runs on `main` when `package.json` changes; skips publish when the version is already on npm (version-keyed concurrency).
 - CI: GitHub Actions `publish.yml` publishes `opencircom` to npm on `v*.*.*` tags (OIDC Trusted Publishing, provenance) and via manual `workflow_dispatch` with an optional ref checkout.
 
 ## 0.9.1

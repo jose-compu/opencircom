@@ -2,6 +2,10 @@ name: Publish
 
 on:
   push:
+    branches:
+      - main
+    paths:
+      - package.json
     tags:
       - "v*.*.*"
   workflow_dispatch:
@@ -11,21 +15,64 @@ on:
         required: false
         type: string
 
-concurrency:
-  group: publish-${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
-  cancel-in-progress: false
-
 permissions:
   contents: read
   id-token: write
 
 jobs:
+  resolve:
+    name: resolve-version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.pkg.outputs.version }}
+      already_published: ${{ steps.guard.outputs.already_published }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref != '' && inputs.ref || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Read package version
+        id: pkg
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "package.json version: $VERSION"
+
+      - name: Check if version already on npm
+        id: guard
+        env:
+          VERSION: ${{ steps.pkg.outputs.version }}
+        run: |
+          set -euo pipefail
+          if PUBLISHED="$(npm view "opencircom@${VERSION}" version 2>/dev/null || true)" && [ "$PUBLISHED" = "$VERSION" ]; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "opencircom@${VERSION} is already on npm; downstream publish will be skipped."
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+            echo "opencircom@${VERSION} is not on npm yet."
+          fi
+
   publish:
     name: publish
+    needs: resolve
+    if: needs.resolve.outputs.already_published != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    concurrency:
+      group: publish-npm-${{ needs.resolve.outputs.version }}
+      cancel-in-progress: false
     env:
       NODE_OPTIONS: --max-old-space-size=4096
+      version: ${{ needs.resolve.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -60,10 +107,11 @@ jobs:
         run: npm test
 
       - name: Verify package version matches release tag
+        if: github.ref_type == 'tag' || (github.event_name == 'workflow_dispatch' && inputs.ref != '')
         run: |
           set -euo pipefail
           PKG_VERSION="$(node -p "require('./package.json').version")"
-          if [ "${{ github.event_name }}" = "push" ]; then
+          if [ "${{ github.ref_type }}" = "tag" ]; then
             TAG="${GITHUB_REF#refs/tags/}"
             EXPECTED="${TAG#v}"
             if [ "$PKG_VERSION" != "$EXPECTED" ]; then
@@ -71,7 +119,7 @@ jobs:
               exit 1
             fi
             echo "Publishing version $PKG_VERSION for tag $TAG"
-          elif [ -n "${{ inputs.ref }}" ]; then
+          else
             REF="${{ inputs.ref }}"
             EXPECTED="${REF#v}"
             if [ "$PKG_VERSION" != "$EXPECTED" ]; then
@@ -79,12 +127,21 @@ jobs:
               exit 1
             fi
             echo "Publishing version $PKG_VERSION for ref $REF"
-          else
-            echo "Publishing version $PKG_VERSION from default checkout (no ref input)"
           fi
-          echo "version=$PKG_VERSION" >> "$GITHUB_ENV"
+
+      - name: Re-check npm before publish
+        id: recheck
+        run: |
+          set -euo pipefail
+          if PUBLISHED="$(npm view "opencircom@${version}" version 2>/dev/null || true)" && [ "$PUBLISHED" = "$version" ]; then
+            echo "skip_publish=true" >> "$GITHUB_OUTPUT"
+            echo "opencircom@${version} appeared on npm while tests ran; skipping publish."
+          else
+            echo "skip_publish=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Publish to npm
+        if: steps.recheck.outputs.skip_publish != 'true'
         run: |
           set -euo pipefail
           LATEST="$(npm view opencircom version)"
@@ -97,6 +154,7 @@ jobs:
           fi
 
       - name: Confirm publication on npm
+        if: steps.recheck.outputs.skip_publish != 'true'
         run: |
           set -euo pipefail
           PUBLISHED="$(npm view "opencircom@${version}" version)"
