@@ -1,6 +1,6 @@
 {
   "name": "opencircom",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "Reusable Circom ZK circuit templates — hashing, comparators, Merkle trees, and more. No dependency on circomlib.",
   "main": "index.js",
   "bin": {
@@ -17,7 +17,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jose-blockchain/opencircom.git"
+    "url": "git+https://github.com/jose-compu/opencircom.git"
   },
   "engines": {
     "node": ">=18.18.0"

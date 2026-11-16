@@ -54,7 +54,7 @@ From npm:
 npm install opencircom
 ```
 
-Or add to your `package.json`: `"opencircom": "^0.9.1"`.
+Or add to your `package.json`: `"opencircom": "^0.10.0"`.
 
 ### Hardhat
 
@@ -112,8 +112,8 @@ Output markdown is written to **docs/api/**; the HTML documentation page at **do
 | Comparators | `RangeProof(n)` | Prove a ≤ x ≤ b (inputs x, a, b; n-bit range). |
 | Comparators | `AgeThresholdProof(n)` | `valid=1` iff `currentYear - birthYear >= minAge` (years range-checked; currentYear ≥ birthYear). |
 | Bitify    | `Num2Bits(n)`, `Bits2Num(n)`, `SafeBits2Num(n)` | Bit decomposition; `SafeBits2Num` binary-constrains each bit (prefer for untrusted inputs). |
-| Gates     | `AND`, `OR`, `SafeAND`, `SafeOR`, `NOT`, `XOR`, `MultiAND(n)` | Boolean gates; `SafeAND`/`SafeOR` binary-constrain inputs. |
-| Utils     | `Mux1`, `Mux2`, `SafeMux1`, `SafeMux2`, `MuxN` / `SelectByIndex(N, nBits)`, `Switcher` | Multiplexer and conditional swap; Safe* muxes constrain selectors to {0,1}. |
+| Gates     | `AND`, `OR`, `SafeAND`, `SafeOR`, `NOT`, `SafeNOT`, `XOR`, `SafeXOR`, `NAND`, `SafeNAND`, `NOR`, `SafeNOR`, `MultiAND(n)` | Boolean gates; Safe* wrappers binary-constrain inputs. |
+| Utils     | `Mux1`, `Mux2`, `MultiMux1(n)`, `MultiMux2(n)`, `SafeMux1`, `SafeMux2`, `SafeMultiMux1(n)`, `SafeMultiMux2(n)`, `MuxN` / `SelectByIndex(N, nBits)`, `Switcher` | Multiplexer and conditional swap; Safe* muxes constrain selectors to {0,1}. |
 | Arithmetic | `Sum(n)`, `InnerProduct(n)`, `DivRem(n)`, `ExpByBits(n)` | Sum, dot product; safe div/rem; field exponentiation (exp as bits). |
 | Utils      | `PadBits(n, target)`, `OneOfN(n)`, `IndexOf(N, nBits)` | Zero-pad bits; 1 if value in array; prove index where arr[i]==value. |
 | Utils      | `Min2(n)`, `Max2(n)` | Minimum / maximum of two n-bit values. |
@@ -160,18 +160,18 @@ Planned or community-requested; not yet implemented:
 - **Signatures**: EdDSA verify (Baby JubJub) and ECDSA verify (secp256k1) are deferred (high constraint cost / implementation effort).
 - **Encryption**: ElGamal and ECDH shared secret deferred (curve cost). Symmetric (Poseidon-based) implemented as `PoseidonEncrypt()`.
 - **Identity & credentials**: Semaphore-style commitment implemented (`IdentityCommitment`, `SemaphoreMembership`). Age/threshold implemented (`AgeThresholdProof`). Selective disclosure buildable from RangeProof + Merkle + commitments.
-- **Trust / tooling (v0.10.0)**: Constraint-count benchmarks per template (`#13`); Poseidon cross-library compatibility tests vs circomlib (`#19`); remaining Safe* wrappers for XOR/NOT/NAND/NOR and MultiMux (`#38`).
+- **Trust / tooling (v0.10.0)**: Constraint-count benchmarks per template (`#13`); Poseidon cross-library compatibility tests vs circomlib (`#19`).
 - **Set membership**: Accumulator-based membership implemented (`AccumulatorMembership(n)`, uses PoEVerify). Merkle/sparse already done.
 - **Payments**: Confidential transfer and mixer (deposit/withdraw) deferred to application repos; build with Merkle, Nullifier, BalanceProof from this lib.
 - **String & data**: UTF-8 validation and simple fixed/range patterns implemented; full regex and JSON field extraction deferred.
-- **Utilities**: Permutation/sort verification implemented (`SortedCheck`, `IsPermutation`). Other padding or encoding schemes (e.g. ISO padding, length-prefix, base64 in-circuit) deferred; PadBits, PadBits10Star, PadPKCS7 remain. Safe wrappers for AND/OR/mux/Bits2Num implemented; remaining Safe* gates/MultiMux tracked as `#38`.
+- **Utilities**: Permutation/sort verification implemented (`SortedCheck`, `IsPermutation`). Other padding or encoding schemes (e.g. ISO padding, length-prefix, base64 in-circuit) deferred; PadBits, PadBits10Star, PadPKCS7 remain. Safe wrappers for gates, mux, Bits2Num, and MultiMux implemented (0.8.0–0.10.0).
 
 Contributions welcome; open an issue to propose or prioritize.
 
 ## Security
 
 - **Range checks**: Use `StrictNum2Bits(n)` or `RangeProof(n)` for untrusted inputs; `LessThan(n)` assumes inputs &lt; 2^n.
-- **Binary selectors / bits**: Prefer `SafeAND`, `SafeOR`, `SafeMux1`, `SafeMux2`, `SafeBits2Num(n)` when inputs may be untrusted. Raw `AND`/`OR`/`Mux1`/`Mux2`/`Bits2Num` are building blocks and do not binary-constrain inputs.
+- **Binary selectors / bits**: Prefer `SafeAND`, `SafeOR`, `SafeXOR`, `SafeNOT`, `SafeNAND`, `SafeNOR`, `SafeMux1`, `SafeMux2`, `SafeMultiMux1(n)`, `SafeMultiMux2(n)`, `SafeBits2Num(n)` when inputs may be untrusted. Raw gates/muxes are building blocks and do not binary-constrain inputs.
 - **Age proofs**: `AgeThresholdProof` only checks year arithmetic; `currentYear` / `minAge` must come from a trusted source (public input or oracle).
 - **Merkle**: `pathIndices[i]` are constrained binary in-circuit; `Switcher` constrains `sel` to {0,1}.
 - **Nullifier**: Use a unique `externalNullifier` per action to avoid cross-action replay.
@@ -209,7 +209,7 @@ From this repo, `npm run compile:test` compiles every file in `test/circuits/` b
 
 Tests use **real** ZK where applicable: circuits are compiled with Circom, then a small Powers of Tau and zkey are generated, and a Groth16 proof is created and verified with snarkjs (no mocks).
 
-**Coverage** (178+ tests): Poseidon, PoseidonEncrypt, SHA-256, Comparators (incl. AgeThresholdProof), IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates (incl. SafeAND/SafeOR), Bitify (incl. SafeBits2Num), Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2/SafeMux1/SafeMux2, MuxN, Arithmetic (incl. PoEVerify), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist, SortedCheck, IsPermutation), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, MACI, and one full Groth16 prove/verify.
+**Coverage** (190+ tests): Poseidon, PoseidonEncrypt, SHA-256, Comparators (incl. AgeThresholdProof), IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates (incl. SafeAND/SafeOR/SafeXOR/SafeNOT/SafeNAND/SafeNOR), Bitify (incl. SafeBits2Num), Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2/MultiMux/SafeMux/SafeMultiMux, MuxN, Arithmetic (incl. PoEVerify), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist, SortedCheck, IsPermutation), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, MACI, and one full Groth16 prove/verify.
 
 ```bash
 npm install
@@ -219,6 +219,8 @@ npm test
 `npm test` runs `compile:test` (all test circuits), then `setup:zk` (ptau + zkey). First run can take about a minute.
 
 ## Releases
+
+![OpenCircom v0.10.0 release banner](assets/banners/v0.10.0.png)
 
 Pushing a semver tag `vX.Y.Z` or merging a `package.json` version bump to `main` triggers [`.github/workflows/publish.yml`](.github/workflows/publish.yml), which runs the same Circom-backed test suite as CI and publishes `opencircom` to npm with [Trusted Publishing](https://docs.npmjs.com/trusted-publishers) (OIDC, no `NPM_TOKEN`). Publish is skipped when that version is already on npm. Optional **workflow_dispatch** with **ref** (e.g. `v0.8.1`) checks out an older tag while the workflow definition stays on `main`.
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="OpenCircom v0.9.1 documentation — installation, CLI, Hardhat/Foundry integration, security, and full circuit template reference." />
+  <meta name="description" content="OpenCircom v0.10.0 documentation — installation, CLI, Hardhat/Foundry integration, security, and full circuit template reference." />
   <title>Documentation — OpenCircom</title>
   <link rel="icon" href="assets/img/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -40,7 +40,7 @@
       <header class="docs-header">
         <p class="section-label">Documentation</p>
         <h1>OpenCircom reference</h1>
-        <p class="docs-lead">v0.9.1 — 104 circuit templates, CLI tooling, integration guides, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
+        <p class="docs-lead">v0.10.0 — 110 circuit templates, CLI tooling, integration guides, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
       </header>
 
       <section class="docs-section" id="overview">
@@ -53,7 +53,7 @@
         <h2>Installation</h2>
         <pre class="code-block"><code class="language-bash">npm install opencircom</code></pre>
         <p>Peer dependency: <strong>circom 2.x</strong> must be installed and available on <code>PATH</code>. OpenCircom does not bundle the compiler.</p>
-        <p>Package version: <code>^0.9.1</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
+        <p>Package version: <code>^0.10.0</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
       </section>
 
       <section class="docs-section" id="includes">
@@ -97,7 +97,7 @@ npx opencircom path</code></pre>
 
       <section class="docs-section" id="cli-ref">
         <h2>CLI reference</h2>
-        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+; current <code>^0.9.1</code>):</p>
+        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+; current <code>^0.10.0</code>):</p>
         <div class="docs-table-wrap">
           <table class="docs-table">
             <thead><tr><th>Command</th><th>Description</th></tr></thead>
@@ -127,7 +127,7 @@ npm test</code></pre>
         <h2>Security</h2>
         <ul class="docs-list">
           <li><strong>Range checks:</strong> Use <code>StrictNum2Bits(n)</code> or <code>RangeProof(n)</code> for untrusted inputs; <code>LessThan(n)</code> assumes inputs &lt; 2<sup>n</sup>.</li>
-          <li><strong>Binary selectors / bits:</strong> Prefer <code>SafeAND</code>, <code>SafeOR</code>, <code>SafeMux1</code>, <code>SafeMux2</code>, <code>SafeBits2Num(n)</code> for untrusted inputs. Raw AND/OR/Mux1/Mux2/Bits2Num are building blocks without binary constraints.</li>
+          <li><strong>Binary selectors / bits:</strong> Prefer <code>SafeAND</code>, <code>SafeOR</code>, <code>SafeXOR</code>, <code>SafeNOT</code>, <code>SafeNAND</code>, <code>SafeNOR</code>, <code>SafeMux1</code>, <code>SafeMux2</code>, <code>SafeMultiMux1(n)</code>, <code>SafeMultiMux2(n)</code>, <code>SafeBits2Num(n)</code> for untrusted inputs. Raw gates/muxes are building blocks without binary constraints on bits/selectors.</li>
           <li><strong>Age proofs:</strong> <code>AgeThresholdProof</code> only checks year arithmetic; <code>currentYear</code> / <code>minAge</code> must come from a trusted source.</li>
           <li><strong>Merkle:</strong> <code>pathIndices[i]</code> are constrained binary in-circuit; <code>Switcher</code> constrains <code>sel</code> to {0,1}.</li>
           <li><strong>Nullifier:</strong> Use a unique <code>externalNullifier</code> per action to avoid cross-action replay.</li>
@@ -381,14 +381,24 @@ npm test</code></pre>
 
 <section class="docs-category" id="cat-gates">
 <h2>Gates</h2>
-<p class="docs-category-intro">9 templates in this category.</p>
-<article class="template-doc" id="XOR-gates-circom" data-search="xor boolean xor: out = 1 iff exactly one of a, b is 1. gates.circom 1 constraint. inputs must be 0 or 1 (enforce with bitify or range checks). no security caveats; use with binary-constrained inputs. inputs must be 0 or 1; use with bitify for range checks. one constraint. a b out">
+<p class="docs-category-intro">13 templates in this category.</p>
+<article class="template-doc" id="XOR-gates-circom" data-search="xor boolean xor: out = 1 iff exactly one of a, b is 1. gates.circom 1 constraint. prefer safexor() when a, b may be untrusted. building-block-only: does not binary-constrain a, b. prefer safexor for untrusted inputs. a b out">
 <h3 class="template-name"><code>XOR()</code></h3>
 <p class="template-notice">Boolean XOR: out = 1 iff exactly one of a, b is 1.</p>
-<p class="template-dev"><strong>Dev:</strong> Inputs must be 0 or 1; use with bitify for range checks. One constraint.</p>
-<p class="template-meta"><strong>Complexity:</strong> 1 constraint. Inputs must be 0 or 1 (enforce with bitify or range checks).</p>
-<p class="template-meta template-security"><strong>Security:</strong> No security caveats; use with binary-constrained inputs.</p>
-<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit.</li><li><code>b</code> — Second bit.</li></ul></dd>
+<p class="template-dev"><strong>Dev:</strong> Building-block-only: does not binary-constrain a, b. Prefer SafeXOR for untrusted inputs.</p>
+<p class="template-meta"><strong>Complexity:</strong> 1 constraint.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Prefer SafeXOR() when a, b may be untrusted.</p>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit (must be 0 or 1; not enforced here).</li><li><code>b</code> — Second bit (must be 0 or 1; not enforced here).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — a XOR b.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/gates.circom</code></p>
+</article>
+<article class="template-doc" id="SafeXOR-gates-circom" data-search="safexor boolean xor with binary-constrained inputs. gates.circom 3 constraints (2 binary + 1 xor). inputs are binary-constrained in-circuit. wraps xor with a*(a-1)===0 and b*(b-1)===0. prefer over xor for untrusted selectors/bits. a b out">
+<h3 class="template-name"><code>SafeXOR()</code></h3>
+<p class="template-notice">Boolean XOR with binary-constrained inputs.</p>
+<p class="template-dev"><strong>Dev:</strong> Wraps XOR with a*(a-1)===0 and b*(b-1)===0. Prefer over XOR for untrusted selectors/bits.</p>
+<p class="template-meta"><strong>Complexity:</strong> 3 constraints (2 binary + 1 XOR).</p>
+<p class="template-meta template-security"><strong>Security:</strong> Inputs are binary-constrained in-circuit.</p>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit (constrained to 0 or 1).</li><li><code>b</code> — Second bit (constrained to 0 or 1).</li></ul></dd>
 <dt>Outputs</dt><dd><ul><li><code>out</code> — a XOR b.</li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/gates.circom</code></p>
 </article>
@@ -430,26 +440,61 @@ npm test</code></pre>
 <dt>Outputs</dt><dd><ul><li><code>out</code> — a OR b.</li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/gates.circom</code></p>
 </article>
-<article class="template-doc" id="NOT-gates-circom" data-search="not boolean not: out = 1 - in. gates.circom in must be 0 or 1. one constraint. in out">
+<article class="template-doc" id="NOT-gates-circom" data-search="not boolean not: out = 1 - in. gates.circom prefer safenot() when in may be untrusted. building-block-only: does not binary-constrain in. prefer safenot for untrusted inputs. in out">
 <h3 class="template-name"><code>NOT()</code></h3>
 <p class="template-notice">Boolean NOT: out = 1 - in.</p>
-<p class="template-dev"><strong>Dev:</strong> in must be 0 or 1. One constraint.</p>
-<dt>Inputs</dt><dd><ul><li><code>in</code> — Input bit.</li></ul></dd>
+<p class="template-dev"><strong>Dev:</strong> Building-block-only: does not binary-constrain in. Prefer SafeNOT for untrusted inputs.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Prefer SafeNOT() when in may be untrusted.</p>
+<dt>Inputs</dt><dd><ul><li><code>in</code> — Input bit (must be 0 or 1; not enforced here).</li></ul></dd>
 <dt>Outputs</dt><dd><ul><li><code>out</code> — 1 if in == 0, 0 if in == 1.</li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/gates.circom</code></p>
 </article>
-<article class="template-doc" id="NAND-gates-circom" data-search="nand boolean nand: out = 1 - a*b. gates.circom a b out">
+<article class="template-doc" id="SafeNOT-gates-circom" data-search="safenot boolean not with binary-constrained input. gates.circom 2 constraints (1 binary + 1 not). input is binary-constrained in-circuit. wraps not with in*(in-1)===0. prefer over not for untrusted bits. in out">
+<h3 class="template-name"><code>SafeNOT()</code></h3>
+<p class="template-notice">Boolean NOT with binary-constrained input.</p>
+<p class="template-dev"><strong>Dev:</strong> Wraps NOT with in*(in-1)===0. Prefer over NOT for untrusted bits.</p>
+<p class="template-meta"><strong>Complexity:</strong> 2 constraints (1 binary + 1 NOT).</p>
+<p class="template-meta template-security"><strong>Security:</strong> Input is binary-constrained in-circuit.</p>
+<dt>Inputs</dt><dd><ul><li><code>in</code> — Input bit (constrained to 0 or 1).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — NOT in.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/gates.circom</code></p>
+</article>
+<article class="template-doc" id="NAND-gates-circom" data-search="nand boolean nand: out = 1 - a*b. gates.circom prefer safenand() when a, b may be untrusted. building-block-only: does not binary-constrain a, b. prefer safenand for untrusted inputs. a b out">
 <h3 class="template-name"><code>NAND()</code></h3>
 <p class="template-notice">Boolean NAND: out = 1 - a*b.</p>
-<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit.</li><li><code>b</code> — Second bit.</li></ul></dd>
+<p class="template-dev"><strong>Dev:</strong> Building-block-only: does not binary-constrain a, b. Prefer SafeNAND for untrusted inputs.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Prefer SafeNAND() when a, b may be untrusted.</p>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit (must be 0 or 1; not enforced here).</li><li><code>b</code> — Second bit (must be 0 or 1; not enforced here).</li></ul></dd>
 <dt>Outputs</dt><dd><ul><li><code>out</code> — NOT(a AND b).</li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/gates.circom</code></p>
 </article>
-<article class="template-doc" id="NOR-gates-circom" data-search="nor boolean nor: out = 1 iff both a and b are 0. gates.circom a b out">
+<article class="template-doc" id="SafeNAND-gates-circom" data-search="safenand boolean nand with binary-constrained inputs. gates.circom 3 constraints (2 binary + 1 nand). inputs are binary-constrained in-circuit. wraps nand with a*(a-1)===0 and b*(b-1)===0. a b out">
+<h3 class="template-name"><code>SafeNAND()</code></h3>
+<p class="template-notice">Boolean NAND with binary-constrained inputs.</p>
+<p class="template-dev"><strong>Dev:</strong> Wraps NAND with a*(a-1)===0 and b*(b-1)===0.</p>
+<p class="template-meta"><strong>Complexity:</strong> 3 constraints (2 binary + 1 NAND).</p>
+<p class="template-meta template-security"><strong>Security:</strong> Inputs are binary-constrained in-circuit.</p>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit (constrained to 0 or 1).</li><li><code>b</code> — Second bit (constrained to 0 or 1).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — a NAND b.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/gates.circom</code></p>
+</article>
+<article class="template-doc" id="NOR-gates-circom" data-search="nor boolean nor: out = 1 iff both a and b are 0. gates.circom prefer safenor() when a, b may be untrusted. building-block-only: does not binary-constrain a, b. prefer safenor for untrusted inputs. a b out">
 <h3 class="template-name"><code>NOR()</code></h3>
 <p class="template-notice">Boolean NOR: out = 1 iff both a and b are 0.</p>
-<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit.</li><li><code>b</code> — Second bit.</li></ul></dd>
+<p class="template-dev"><strong>Dev:</strong> Building-block-only: does not binary-constrain a, b. Prefer SafeNOR for untrusted inputs.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Prefer SafeNOR() when a, b may be untrusted.</p>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit (must be 0 or 1; not enforced here).</li><li><code>b</code> — Second bit (must be 0 or 1; not enforced here).</li></ul></dd>
 <dt>Outputs</dt><dd><ul><li><code>out</code> — NOT(a OR b).</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/gates.circom</code></p>
+</article>
+<article class="template-doc" id="SafeNOR-gates-circom" data-search="safenor boolean nor with binary-constrained inputs. gates.circom 3 constraints (2 binary + 1 nor). inputs are binary-constrained in-circuit. wraps nor with a*(a-1)===0 and b*(b-1)===0. a b out">
+<h3 class="template-name"><code>SafeNOR()</code></h3>
+<p class="template-notice">Boolean NOR with binary-constrained inputs.</p>
+<p class="template-dev"><strong>Dev:</strong> Wraps NOR with a*(a-1)===0 and b*(b-1)===0.</p>
+<p class="template-meta"><strong>Complexity:</strong> 3 constraints (2 binary + 1 NOR).</p>
+<p class="template-meta template-security"><strong>Security:</strong> Inputs are binary-constrained in-circuit.</p>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First bit (constrained to 0 or 1).</li><li><code>b</code> — Second bit (constrained to 0 or 1).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out</code> — a NOR b.</li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/gates.circom</code></p>
 </article>
 <article class="template-doc" id="MultiAND-gates-circom" data-search="multiand n-way and: out = 1 iff all in[i] are 1. gates.circom n o(n) constraints (recursive and tree). inputs must be binary. none; combine with isequal/oneofn for set checks. recursive structure; constraint count o(n). inputs must be 0 or 1. n number of inputs. in out">
@@ -468,14 +513,15 @@ npm test</code></pre>
 
 <section class="docs-category" id="cat-mux">
 <h2>Mux &amp; select</h2>
-<p class="docs-category-intro">8 templates in this category.</p>
-<article class="template-doc" id="MultiMux1-mux1-circom" data-search="multimux1 2-to-1 multiplexer for n parallel signals: out[i] = c[i][1] if s else c[i][0]. mux1.circom n out[i] = (c[i][1] - c[i][0])*s + c[i][0]. one constraint per output. n number of parallel channels. c s out">
+<p class="docs-category-intro">10 templates in this category.</p>
+<article class="template-doc" id="MultiMux1-mux1-circom" data-search="multimux1 2-to-1 multiplexer for n parallel signals: out[i] = c[i][1] if s else c[i][0]. mux1.circom n prefer safemultimux1(n) when s may be untrusted. building-block-only: does not binary-constrain s. prefer safemultimux1 for untrusted selectors. n number of parallel channels. c s out">
 <h3 class="template-name"><code>MultiMux1(n)</code></h3>
 <p class="template-notice">2-to-1 multiplexer for n parallel signals: out[i] = c[i][1] if s else c[i][0].</p>
-<p class="template-dev"><strong>Dev:</strong> out[i] = (c[i][1] - c[i][0])*s + c[i][0]. One constraint per output.</p>
+<p class="template-dev"><strong>Dev:</strong> Building-block-only: does not binary-constrain s. Prefer SafeMultiMux1 for untrusted selectors.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Prefer SafeMultiMux1(n) when s may be untrusted.</p>
 <dl class="template-dl">
 <dt>Parameters</dt><dd><ul><li><code>n</code> — Number of parallel channels.</li></ul></dd>
-<dt>Inputs</dt><dd><ul><li><code>c[n]</code></li><li><code>s</code> — Selector (0 or 1).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>c[n]</code></li><li><code>s</code> — Selector (0 or 1; not enforced here).</li></ul></dd>
 <dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/mux1.circom</code></p>
 </article>
@@ -498,10 +544,23 @@ npm test</code></pre>
 <dt>Outputs</dt><dd><ul><li><code>out</code> — Selected value.</li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/mux1.circom</code></p>
 </article>
-<article class="template-doc" id="MultiMux2-mux2-circom" data-search="multimux2 4-to-1 multiplexer for n parallel signals; selector s[2] (2 bits). mux2.circom n out[i] = c[i][s[0] + 2*s[1]]. constraint count o(n). n number of parallel channels. c s out">
+<article class="template-doc" id="SafeMultiMux1-mux1-circom" data-search="safemultimux1 multi-channel 2-to-1 multiplexer with binary-constrained selector. mux1.circom n multimux1 cost + 1 binary constraint. selector is binary-constrained in-circuit. wraps multimux1 with s*(s-1)===0. data inputs remain unconstrained field elements. n number of parallel channels. c s out">
+<h3 class="template-name"><code>SafeMultiMux1(n)</code></h3>
+<p class="template-notice">Multi-channel 2-to-1 multiplexer with binary-constrained selector.</p>
+<p class="template-dev"><strong>Dev:</strong> Wraps MultiMux1 with s*(s-1)===0. Data inputs remain unconstrained field elements.</p>
+<p class="template-meta"><strong>Complexity:</strong> MultiMux1 cost + 1 binary constraint.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Selector is binary-constrained in-circuit.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of parallel channels.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>c[n]</code></li><li><code>s</code> — Selector (constrained to 0 or 1).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/mux1.circom</code></p>
+</article>
+<article class="template-doc" id="MultiMux2-mux2-circom" data-search="multimux2 4-to-1 multiplexer for n parallel signals; selector s[2] (2 bits). mux2.circom n prefer safemultimux2(n) when s may be untrusted. building-block-only: does not binary-constrain s[0], s[1]. prefer safemultimux2 for untrusted selectors. n number of parallel channels. c s out">
 <h3 class="template-name"><code>MultiMux2(n)</code></h3>
 <p class="template-notice">4-to-1 multiplexer for n parallel signals; selector s[2] (2 bits).</p>
-<p class="template-dev"><strong>Dev:</strong> out[i] = c[i][s[0] + 2*s[1]]. Constraint count O(n).</p>
+<p class="template-dev"><strong>Dev:</strong> Building-block-only: does not binary-constrain s[0], s[1]. Prefer SafeMultiMux2 for untrusted selectors.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Prefer SafeMultiMux2(n) when s may be untrusted.</p>
 <dl class="template-dl">
 <dt>Parameters</dt><dd><ul><li><code>n</code> — Number of parallel channels.</li></ul></dd>
 <dt>Inputs</dt><dd><ul><li><code>c[n]</code></li><li><code>s[2]</code></li></ul></dd>
@@ -525,6 +584,18 @@ npm test</code></pre>
 <p class="template-meta template-security"><strong>Security:</strong> Selector bits are binary-constrained in-circuit.</p>
 <dt>Inputs</dt><dd><ul><li><code>c[4]</code></li><li><code>s[2]</code></li></ul></dd>
 <dt>Outputs</dt><dd><ul><li><code>out</code> — Selected value.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/mux2.circom</code></p>
+</article>
+<article class="template-doc" id="SafeMultiMux2-mux2-circom" data-search="safemultimux2 multi-channel 4-to-1 multiplexer with binary-constrained selector bits. mux2.circom n multimux2 cost + 2 binary constraints. selector bits are binary-constrained in-circuit. wraps multimux2 with s[i]*(s[i]-1)===0. data inputs remain unconstrained field elements. n number of parallel channels. c s out">
+<h3 class="template-name"><code>SafeMultiMux2(n)</code></h3>
+<p class="template-notice">Multi-channel 4-to-1 multiplexer with binary-constrained selector bits.</p>
+<p class="template-dev"><strong>Dev:</strong> Wraps MultiMux2 with s[i]*(s[i]-1)===0. Data inputs remain unconstrained field elements.</p>
+<p class="template-meta"><strong>Complexity:</strong> MultiMux2 cost + 2 binary constraints.</p>
+<p class="template-meta template-security"><strong>Security:</strong> Selector bits are binary-constrained in-circuit.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Number of parallel channels.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>c[n]</code></li><li><code>s[2]</code></li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>out[n]</code></li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/mux2.circom</code></p>
 </article>
 <article class="template-doc" id="SelectByIndex-muxn-circom" data-search="selectbyindex selects one of n inputs by index; out = inputs[index]. muxn.circom n, nbits o(n): strictnum2bits(nbits), lessthan(nbits+1), n×isequal, sum(n). ~46 constraints for n=4,nbits=2. index is range-checked; ensures correct selection. no overflow if inputs are field elements. index is constrained to [0, n-1] via strictnum2bits and lessthan. nbits must satisfy 2^nbits &gt;= n (e.g. n=5 =&gt; nbits=3). n number of inputs. nbits bit width for index (2^nbits &gt;= n). inputs index out">
@@ -1175,7 +1246,7 @@ npm test</code></pre>
         <a href="https://www.npmjs.com/package/opencircom">npm</a>
         <a href="https://github.com/jose-compu/opencircom/blob/main/LICENSE">MIT License</a>
       </div>
-      <p class="footer-copy">OpenCircom v0.9.1 · Generated by <code>npm run docs</code></p>
+      <p class="footer-copy">OpenCircom v0.10.0 · Generated by <code>npm run docs</code></p>
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>

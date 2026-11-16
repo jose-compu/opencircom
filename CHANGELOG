@@ -2,8 +2,15 @@
 
 ## Unreleased
 
+## 0.10.0
+
+- Safe wrappers for remaining binary building blocks (#38): `SafeXOR()`, `SafeNOT()`, `SafeNAND()`, `SafeNOR()`, `SafeMultiMux1(n)`, `SafeMultiMux2(n)` — enforce 0/1 on gate inputs and mux selectors (data inputs on multi-mux remain unconstrained field elements).
+- Raw `XOR`/`NOT`/`NAND`/`NOR` and `MultiMux1`/`MultiMux2` marked building-block-only in docs; prefer Safe* for untrusted inputs.
+- Tests: truth tables and non-binary rejection cases for the new wrappers (12 new tests; 190+ total).
+- Docs: README circuit table, SECURITY.md Safe* guidance, release banner, regenerated documentation.html.
 - CI: `publish.yml` also runs on `main` when `package.json` changes; skips publish when the version is already on npm (version-keyed concurrency).
 - CI: GitHub Actions `publish.yml` publishes `opencircom` to npm on `v*.*.*` tags (OIDC Trusted Publishing, provenance) and via manual `workflow_dispatch` with an optional ref checkout.
+- `package.json` `repository.url` set to `git+https://github.com/jose-compu/opencircom.git` for npm provenance.
 
 ## 0.9.1
 
