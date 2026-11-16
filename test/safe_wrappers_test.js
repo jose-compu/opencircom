@@ -15,6 +15,16 @@ function baseInput(overrides = {}) {
     c2: [100, 200, 300, 400],
     s2: [0, 0],
     bits: [0, 0, 0, 0, 0, 0, 0, 0],
+    mmC1: [
+      [11, 12],
+      [21, 22],
+    ],
+    mmS1: 0,
+    mmC2: [
+      [100, 200, 300, 400],
+      [1000, 2000, 3000, 4000],
+    ],
+    mmS2: [0, 0],
     ...overrides,
   };
 }
@@ -120,6 +130,62 @@ describe("Safe wrappers (opencircom)", function () {
     try {
       const bits = [0, 1, 2, 0, 0, 0, 0, 0];
       await circuit.calculateWitness(baseInput({ bits }), true);
+    } catch (_) {
+      failed = true;
+    }
+    assert.isTrue(failed);
+  });
+
+  const gatePairs = [
+    { a: 0, b: 0, xor: "0", not: "1", nand: "1", nor: "1" },
+    { a: 0, b: 1, xor: "1", not: "1", nand: "1", nor: "0" },
+    { a: 1, b: 0, xor: "1", not: "0", nand: "1", nor: "0" },
+    { a: 1, b: 1, xor: "0", not: "0", nand: "0", nor: "0" },
+  ];
+
+  for (const row of gatePairs) {
+    it(`SafeXOR/NOT/NAND/NOR truth row a=${row.a}, b=${row.b}`, async () => {
+      const w = await circuit.calculateWitness(baseInput({ a: row.a, b: row.b }), true);
+      await circuit.checkConstraints(w);
+      assert.equal(w[6].toString(), row.xor);
+      assert.equal(w[7].toString(), row.not);
+      assert.equal(w[8].toString(), row.nand);
+      assert.equal(w[9].toString(), row.nor);
+    });
+  }
+
+  it("SafeMultiMux1(2): s=0 selects c[i][0]", async () => {
+    const w = await circuit.calculateWitness(baseInput({ mmS1: 0 }), true);
+    await circuit.checkConstraints(w);
+    assert.equal(w[10].toString(), "11");
+    assert.equal(w[11].toString(), "21");
+  });
+
+  it("SafeMultiMux1(2): s=1 selects c[i][1]", async () => {
+    const w = await circuit.calculateWitness(baseInput({ mmS1: 1 }), true);
+    await circuit.checkConstraints(w);
+    assert.equal(w[10].toString(), "12");
+    assert.equal(w[11].toString(), "22");
+  });
+
+  it("SafeMultiMux2(2): selector 00 picks index 0", async () => {
+    const w = await circuit.calculateWitness(baseInput({ mmS2: [0, 0] }), true);
+    await circuit.checkConstraints(w);
+    assert.equal(w[12].toString(), "100");
+    assert.equal(w[13].toString(), "1000");
+  });
+
+  it("SafeMultiMux2(2): selector 11 picks index 3", async () => {
+    const w = await circuit.calculateWitness(baseInput({ mmS2: [1, 1] }), true);
+    await circuit.checkConstraints(w);
+    assert.equal(w[12].toString(), "400");
+    assert.equal(w[13].toString(), "4000");
+  });
+
+  it("SafeXOR rejects non-binary input (2)", async () => {
+    let failed = false;
+    try {
+      await circuit.calculateWitness(baseInput({ a: 2, b: 0 }), true);
     } catch (_) {
       failed = true;
     }
