@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.10.0
+
+- Gates: `SafeXOR()`, `SafeNOT()`, `SafeNAND()`, `SafeNOR()` binary-constrain inputs, then call raw gates (#38).
+- Mux: `SafeMultiMux1(n)` and `SafeMultiMux2(n)` binary-constrain selectors before `MultiMux1` / `MultiMux2` (#38).
+- Raw XOR/NOT/NAND/NOR and MultiMux1/MultiMux2 documented as building-block-only; README, SECURITY.md, and regenerated docs updated.
+- package.json `repository.url` now `git+https://github.com/jose-compu/opencircom.git` (npm provenance).
 - CI: `publish.yml` also runs on `main` when `package.json` changes; skips publish when the version is already on npm (version-keyed concurrency).
 - CI: GitHub Actions `publish.yml` publishes `opencircom` to npm on `v*.*.*` tags (OIDC Trusted Publishing, provenance) and via manual `workflow_dispatch` with an optional ref checkout.
 

@@ -3,11 +3,12 @@ pragma circom 2.0.0;
 /**
  * @title MultiMux1
  * @notice 2-to-1 multiplexer for n parallel signals: out[i] = c[i][1] if s else c[i][0].
- * @dev out[i] = (c[i][1] - c[i][0])*s + c[i][0]. One constraint per output.
+ * @dev Building-block-only: does not binary-constrain s. Prefer SafeMultiMux1 for untrusted selectors.
  * @param n Number of parallel channels.
  * @custom:input c[n][2] For each channel, two choices c[i][0], c[i][1].
- * @custom:input s Selector (0 or 1).
+ * @custom:input s Selector (0 or 1; not enforced here).
  * @custom:output out[n] Selected value per channel.
+ * @custom:security Prefer SafeMultiMux1(n) when s may be untrusted.
  */
 template MultiMux1(n) {
     signal input c[n][2];
@@ -15,6 +16,34 @@ template MultiMux1(n) {
     signal output out[n];
     for (var i = 0; i < n; i++) {
         out[i] <== (c[i][1] - c[i][0]) * s + c[i][0];
+    }
+}
+
+/**
+ * @title SafeMultiMux1
+ * @notice Multi-channel 2-to-1 mux with binary-constrained selector.
+ * @dev Wraps MultiMux1 with s*(s-1)===0. Prefer over MultiMux1 for untrusted selectors.
+ * @param n Number of parallel channels.
+ * @custom:input c[n][2] Two choices per channel.
+ * @custom:input s Selector (constrained to 0 or 1).
+ * @custom:output out[n] Selected value per channel.
+ * @custom:complexity MultiMux1 cost + 1 binary constraint.
+ * @custom:security Selector is binary-constrained in-circuit.
+ */
+template SafeMultiMux1(n) {
+    signal input c[n][2];
+    signal input s;
+    signal output out[n];
+    s * (s - 1) === 0;
+    component mux = MultiMux1(n);
+    for (var i = 0; i < n; i++) {
+        for (var j = 0; j < 2; j++) {
+            mux.c[i][j] <== c[i][j];
+        }
+    }
+    mux.s <== s;
+    for (var i = 0; i < n; i++) {
+        out[i] <== mux.out[i];
     }
 }
 

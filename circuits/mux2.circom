@@ -3,11 +3,12 @@ pragma circom 2.0.0;
 /**
  * @title MultiMux2
  * @notice 4-to-1 multiplexer for n parallel signals; selector s[2] (2 bits).
- * @dev out[i] = c[i][s[0] + 2*s[1]]. Constraint count O(n).
+ * @dev Building-block-only: does not binary-constrain s[0], s[1]. Prefer SafeMultiMux2 for untrusted selectors.
  * @param n Number of parallel channels.
  * @custom:input c[n][4] Four choices per channel.
- * @custom:input s[2] Selector bits (0..3).
+ * @custom:input s[2] Selector bits (must be 0/1; not enforced here).
  * @custom:output out[n] Selected value per channel.
+ * @custom:security Prefer SafeMultiMux2(n) when s may be untrusted.
  */
 template MultiMux2(n) {
     signal input c[n][4];
@@ -25,6 +26,36 @@ template MultiMux2(n) {
         a0[i] <== (c[i][1] - c[i][0]) * s[0];
         a[i] <== c[i][0];
         out[i] <== a10[i] + a1[i] + a0[i] + a[i];
+    }
+}
+
+/**
+ * @title SafeMultiMux2
+ * @notice Multi-channel 4-to-1 mux with binary-constrained selector bits.
+ * @dev Wraps MultiMux2 with s[i]*(s[i]-1)===0 for i in {0,1}. Prefer over MultiMux2 for untrusted selectors.
+ * @param n Number of parallel channels.
+ * @custom:input c[n][4] Four choices per channel.
+ * @custom:input s[2] Selector bits (each constrained to 0 or 1).
+ * @custom:output out[n] Selected value per channel.
+ * @custom:complexity MultiMux2 cost + 2 binary constraints.
+ * @custom:security Selector bits are binary-constrained in-circuit.
+ */
+template SafeMultiMux2(n) {
+    signal input c[n][4];
+    signal input s[2];
+    signal output out[n];
+    s[0] * (s[0] - 1) === 0;
+    s[1] * (s[1] - 1) === 0;
+    component mux = MultiMux2(n);
+    for (var i = 0; i < n; i++) {
+        for (var j = 0; j < 4; j++) {
+            mux.c[i][j] <== c[i][j];
+        }
+    }
+    mux.s[0] <== s[0];
+    mux.s[1] <== s[1];
+    for (var i = 0; i < n; i++) {
+        out[i] <== mux.out[i];
     }
 }
 

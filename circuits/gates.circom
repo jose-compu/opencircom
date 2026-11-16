@@ -3,12 +3,12 @@ pragma circom 2.0.0;
 /**
  * @title XOR
  * @notice Boolean XOR: out = 1 iff exactly one of a, b is 1.
- * @dev Inputs must be 0 or 1; use with bitify for range checks. One constraint.
- * @custom:input a First bit.
- * @custom:input b Second bit.
+ * @dev Building-block-only: does not binary-constrain a, b. Prefer SafeXOR for untrusted inputs.
+ * @custom:input a First bit (must be 0 or 1; not enforced here).
+ * @custom:input b Second bit (must be 0 or 1; not enforced here).
  * @custom:output out a XOR b.
- * @custom:complexity 1 constraint. Inputs must be 0 or 1 (enforce with bitify or range checks).
- * @custom:security No security caveats; use with binary-constrained inputs.
+ * @custom:complexity 1 constraint.
+ * @custom:security Prefer SafeXOR() when a, b may be untrusted.
  */
 template XOR() {
     signal input a;
@@ -56,6 +56,28 @@ template SafeAND() {
 }
 
 /**
+ * @title SafeXOR
+ * @notice Boolean XOR with binary-constrained inputs.
+ * @dev Wraps XOR with a*(a-1)===0 and b*(b-1)===0. Prefer over XOR for untrusted selectors/bits.
+ * @custom:input a First bit (constrained to 0 or 1).
+ * @custom:input b Second bit (constrained to 0 or 1).
+ * @custom:output out a XOR b.
+ * @custom:complexity 3 constraints (2 binary + 1 XOR).
+ * @custom:security Inputs are binary-constrained in-circuit.
+ */
+template SafeXOR() {
+    signal input a;
+    signal input b;
+    signal output out;
+    a * (a - 1) === 0;
+    b * (b - 1) === 0;
+    component g = XOR();
+    g.a <== a;
+    g.b <== b;
+    out <== g.out;
+}
+
+/**
  * @title OR
  * @notice Boolean OR: out = 1 iff at least one of a, b is 1.
  * @dev Building-block-only: does not binary-constrain a, b. Prefer SafeOR for untrusted inputs.
@@ -96,9 +118,10 @@ template SafeOR() {
 /**
  * @title NOT
  * @notice Boolean NOT: out = 1 - in.
- * @dev in must be 0 or 1. One constraint.
- * @custom:input in Input bit.
+ * @dev Building-block-only: does not binary-constrain in. Prefer SafeNOT for untrusted inputs.
+ * @custom:input in Input bit (must be 0 or 1; not enforced here).
  * @custom:output out 1 if in == 0, 0 if in == 1.
+ * @custom:security Prefer SafeNOT() when in may be untrusted.
  */
 template NOT() {
     signal input in;
@@ -107,11 +130,31 @@ template NOT() {
 }
 
 /**
+ * @title SafeNOT
+ * @notice Boolean NOT with binary-constrained input.
+ * @dev Wraps NOT with in*(in-1)===0. Prefer over NOT for untrusted bits.
+ * @custom:input in Input bit (constrained to 0 or 1).
+ * @custom:output out 1 if in == 0, 0 if in == 1.
+ * @custom:complexity 2 constraints (1 binary + 1 NOT).
+ * @custom:security Input is binary-constrained in-circuit.
+ */
+template SafeNOT() {
+    signal input in;
+    signal output out;
+    in * (in - 1) === 0;
+    component g = NOT();
+    g.in <== in;
+    out <== g.out;
+}
+
+/**
  * @title NAND
  * @notice Boolean NAND: out = 1 - a*b.
- * @custom:input a First bit.
- * @custom:input b Second bit.
+ * @dev Building-block-only: does not binary-constrain a, b. Prefer SafeNAND for untrusted inputs.
+ * @custom:input a First bit (must be 0 or 1; not enforced here).
+ * @custom:input b Second bit (must be 0 or 1; not enforced here).
  * @custom:output out NOT(a AND b).
+ * @custom:security Prefer SafeNAND() when a, b may be untrusted.
  */
 template NAND() {
     signal input a;
@@ -121,17 +164,63 @@ template NAND() {
 }
 
 /**
+ * @title SafeNAND
+ * @notice Boolean NAND with binary-constrained inputs.
+ * @dev Wraps NAND with a*(a-1)===0 and b*(b-1)===0. Prefer over NAND for untrusted bits.
+ * @custom:input a First bit (constrained to 0 or 1).
+ * @custom:input b Second bit (constrained to 0 or 1).
+ * @custom:output out NOT(a AND b).
+ * @custom:complexity 3 constraints (2 binary + 1 NAND).
+ * @custom:security Inputs are binary-constrained in-circuit.
+ */
+template SafeNAND() {
+    signal input a;
+    signal input b;
+    signal output out;
+    a * (a - 1) === 0;
+    b * (b - 1) === 0;
+    component g = NAND();
+    g.a <== a;
+    g.b <== b;
+    out <== g.out;
+}
+
+/**
  * @title NOR
  * @notice Boolean NOR: out = 1 iff both a and b are 0.
- * @custom:input a First bit.
- * @custom:input b Second bit.
+ * @dev Building-block-only: does not binary-constrain a, b. Prefer SafeNOR for untrusted inputs.
+ * @custom:input a First bit (must be 0 or 1; not enforced here).
+ * @custom:input b Second bit (must be 0 or 1; not enforced here).
  * @custom:output out NOT(a OR b).
+ * @custom:security Prefer SafeNOR() when a, b may be untrusted.
  */
 template NOR() {
     signal input a;
     signal input b;
     signal output out;
     out <== a * b + 1 - a - b;
+}
+
+/**
+ * @title SafeNOR
+ * @notice Boolean NOR with binary-constrained inputs.
+ * @dev Wraps NOR with a*(a-1)===0 and b*(b-1)===0. Prefer over NOR for untrusted bits.
+ * @custom:input a First bit (constrained to 0 or 1).
+ * @custom:input b Second bit (constrained to 0 or 1).
+ * @custom:output out NOT(a OR b).
+ * @custom:complexity 3 constraints (2 binary + 1 NOR).
+ * @custom:security Inputs are binary-constrained in-circuit.
+ */
+template SafeNOR() {
+    signal input a;
+    signal input b;
+    signal output out;
+    a * (a - 1) === 0;
+    b * (b - 1) === 0;
+    component g = NOR();
+    g.a <== a;
+    g.b <== b;
+    out <== g.out;
 }
 
 /**

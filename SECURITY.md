@@ -22,7 +22,7 @@ Wiring and configuration errors cause more production failures than broken hash 
 
 ### Known building blocks that require wrappers
 
-Raw `AND`, `OR`, `XOR`, `NOT`, `NAND`, `NOR`, `Mux1`, `Mux2`, `MultiMux1`, `MultiMux2`, and `Bits2Num` do **not** binary-constrain inputs (0.5.0 audit). Prefer `SafeAND`, `SafeOR`, `SafeMux1`, `SafeMux2`, `SafeBits2Num`. Remaining Safe* wrappers are tracked in `#38`.
+Raw `AND`, `OR`, `XOR`, `NOT`, `NAND`, `NOR`, `Mux1`, `Mux2`, `MultiMux1`, `MultiMux2`, and `Bits2Num` do **not** binary-constrain inputs (0.5.0 audit). Prefer `SafeAND`, `SafeOR`, `SafeXOR`, `SafeNOT`, `SafeNAND`, `SafeNOR`, `SafeMux1`, `SafeMux2`, `SafeMultiMux1`, `SafeMultiMux2`, `SafeBits2Num` for untrusted bits or selectors.
 
 ### References
 
@@ -43,10 +43,10 @@ Raw `AND`, `OR`, `XOR`, `NOT`, `NAND`, `NOR`, `Mux1`, `Mux2`, `MultiMux1`, `Mult
 - `Bits2Num(n)` does **not** binary-constrain `in[i]` (building block). Prefer `SafeBits2Num(n)` when bit arrays may be untrusted.
 - For full field range (254-bit) use `AliasCheck` with `Num2Bits(254)` outputs.
 
-### Gates & mux (`AND`, `OR`, `Mux1`, `Mux2` and Safe*)
+### Gates & mux (`AND`, `OR`, `XOR`, `NOT`, `NAND`, `NOR`, `Mux1`, `Mux2`, `MultiMux1`, `MultiMux2` and Safe*)
 
-- Raw `AND`, `OR`, `Mux1`, `Mux2` assume binary inputs/selectors by design and do **not** enforce them (documented in the 0.5.0 audit).
-- Prefer `SafeAND()`, `SafeOR()`, `SafeMux1()`, `SafeMux2()` for untrusted bits or selectors; each adds `x*(x-1)===0` constraints before the underlying building block.
+- Raw `AND`, `OR`, `XOR`, `NOT`, `NAND`, `NOR`, `Mux1`, `Mux2`, `MultiMux1`, `MultiMux2` assume binary inputs/selectors by design and do **not** enforce them (documented in the 0.5.0 audit).
+- Prefer `SafeAND()`, `SafeOR()`, `SafeXOR()`, `SafeNOT()`, `SafeNAND()`, `SafeNOR()`, `SafeMux1()`, `SafeMux2()`, `SafeMultiMux1(n)`, `SafeMultiMux2(n)` for untrusted bits or selectors; each adds `x*(x-1)===0` constraints before the underlying building block.
 
 ### Poseidon / MiMC
 
