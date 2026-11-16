@@ -61,14 +61,59 @@ def load_share_tech_mono(size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(str(path), size=size)
 
 
+def _line_width(draw: ImageDraw.ImageDraw, line: str, font: ImageFont.ImageFont) -> int:
+    return draw.textbbox((0, 0), line, font=font)[2]
+
+
+def _last_line_ok(line: str) -> bool:
+    return len(line.split()) >= 2
+
+
 def wrap_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont, max_width: int) -> list[str]:
+    """Prefer two balanced lines; never leave a lone word on the last line."""
     words = text.split()
+    if not words:
+        return []
+    if _line_width(draw, text, font) <= max_width:
+        return [text]
+
+    n = len(words)
+    best_lines: list[str] | None = None
+    best_key: tuple[int, int, int] | None = None
+
+    def consider(chunks: list[str]) -> None:
+        nonlocal best_lines, best_key
+        if any(not _last_line_ok(c) for c in chunks[1:]):
+            return
+        if any(_line_width(draw, c, font) > max_width for c in chunks):
+            return
+        widths = [_line_width(draw, c, font) for c in chunks]
+        key = (len(chunks), max(widths), max(widths) - min(widths))
+        if best_key is None or key < best_key:
+            best_key = key
+            best_lines = chunks
+
+    for i in range(1, n):
+        consider([" ".join(words[:i]), " ".join(words[i:])])
+
+    for i in range(1, n - 1):
+        for j in range(i + 1, n):
+            consider(
+                [
+                    " ".join(words[:i]),
+                    " ".join(words[i:j]),
+                    " ".join(words[j:]),
+                ]
+            )
+
+    if best_lines:
+        return best_lines
+
     lines: list[str] = []
     current = ""
     for word in words:
         trial = f"{current} {word}".strip()
-        w = draw.textbbox((0, 0), trial, font=font)[2]
-        if w <= max_width:
+        if _line_width(draw, trial, font) <= max_width:
             current = trial
         else:
             if current:
@@ -76,6 +121,15 @@ def wrap_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont, m
             current = word
     if current:
         lines.append(current)
+    while len(lines) >= 2 and not _last_line_ok(lines[-1]):
+        prev_words = lines[-2].split()
+        if len(prev_words) <= 1:
+            break
+        moved = prev_words.pop()
+        lines[-2] = " ".join(prev_words)
+        lines[-1] = f"{moved} {lines[-1]}".strip()
+        if _line_width(draw, lines[-1], font) > max_width or _line_width(draw, lines[-2], font) > max_width:
+            break
     return lines
 
 
@@ -186,13 +240,17 @@ def render_banner(cfg: dict, logo_path: Path, out_path: Path) -> None:
     )
     draw_corner_brackets(draw, frame_margin + 8, w, h, BLUE_DIM)
 
+    inner_w = w - 2 * frame_margin
+    content_x = frame_margin + 28
+    body_max_w = int(inner_w * 0.80)
+
     name_font = load_orbitron(44, weight=800)
     ver_font = load_orbitron(30, weight=700)
-    title_font = load_orbitron(32, weight=700)
+    title_font = load_orbitron(36, weight=700)
     tag_font = load_rajdhani(24, "medium")
-    body_font = load_rajdhani(23, "regular")
-    date_font = load_rajdhani(20, "semibold")
-    small_font = load_rajdhani(19, "regular")
+    body_font = load_rajdhani(35, "semibold")
+    date_font = load_rajdhani(21, "semibold")
+    pkg_font = load_rajdhani(22, "medium")
     mono_font = load_share_tech_mono(21)
 
     logo = Image.open(logo_path).convert("RGBA")
@@ -218,28 +276,45 @@ def render_banner(cfg: dict, logo_path: Path, out_path: Path) -> None:
 
     title = cfg.get("title", "Safe gate & mux wrappers")
     date = cfg.get("date", "2026-11-16")
-    y_title = 188
-    glow_text(img, (64, y_title), title, title_font, TEXT, glow_rgb=BLUE_BRIGHT, blur_radius=8, glow_alpha=60)
+    y_title = 178
+    glow_text(img, (content_x, y_title), title, title_font, TEXT, glow_rgb=BLUE_BRIGHT, blur_radius=8, glow_alpha=60)
     draw = ImageDraw.Draw(img)
-    draw.text((64, y_title + 46), date, font=date_font, fill=MUTED)
+    y_date = y_title + 52
+    draw.text((content_x, y_date), date, font=date_font, fill=MUTED)
+
+    accent_y = y_date + 38
+    accent_w = 220
+    draw.line([(content_x, accent_y), (content_x + accent_w, accent_y)], fill=BLUE_DIM, width=2)
+    draw.line(
+        [(content_x + 12, accent_y + 3), (content_x + accent_w - 12, accent_y + 3)],
+        fill=(30, 55, 75),
+        width=1,
+    )
 
     summary = cfg.get(
         "summary",
         "Safe wrappers for XOR, NOT, NAND, NOR, and the multi-channel muxes "
         "now reject any bit or selector that is not 0 or 1.",
     )
-    y = 288
-    max_text_w = w - 128
-    for line in wrap_text(draw, summary, body_font, max_text_w):
-        draw.text((64, y), line, font=body_font, fill=SILVER)
-        y += 30
+    summary_lines = wrap_text(draw, summary, body_font, body_max_w)
+    line_h = 42
+    body_block_h = line_h * len(summary_lines)
+    footer_top = h - 132
+    header_bottom = accent_y + 20
+    mid_gap = footer_top - header_bottom - body_block_h
+    y_body = header_bottom + max(28, mid_gap // 2)
+
+    body_fill = (228, 234, 242)
+    for line in summary_lines:
+        draw.text((content_x, y_body), line, font=body_font, fill=body_fill)
+        y_body += line_h
 
     pkg_line = cfg.get("package_line", f"opencircom · {ver.lstrip('v')}")
     install = cfg.get("install", "npm install opencircom@0.10.0")
 
-    draw.line([(64, h - 132), (w - 64, h - 132)], fill=(40, 70, 95), width=1)
-    draw.text((64, h - 112), pkg_line, font=small_font, fill=SILVER_DIM)
-    draw.text((64, h - 80), install, font=mono_font, fill=BLUE_BRIGHT)
+    draw.line([(content_x, h - 132), (w - frame_margin - 28, h - 132)], fill=(40, 70, 95), width=1)
+    draw.text((content_x, h - 108), pkg_line, font=pkg_font, fill=SILVER)
+    draw.text((content_x, h - 76), install, font=mono_font, fill=BLUE_BRIGHT)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(out_path, format="PNG", optimize=True)
