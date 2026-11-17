@@ -26,6 +26,8 @@ const path = require("path");
 const ROOT = path.join(__dirname, "..");
 const CIRCUITS_DIR = path.join(ROOT, "circuits");
 const DOCS_DIR = path.join(ROOT, "docs", "api");
+const BENCH_JSON = path.join(ROOT, "docs", "benchmarks", "constraints.json");
+const PKG_VERSION = require(path.join(ROOT, "package.json")).version;
 
 const CATEGORY_ORDER = ["arithmetic", "comparators", "bitify", "gates", "mux", "utils", "string_data", "hashing", "merkle", "voting"];
 const CATEGORY_TITLES = {
@@ -273,6 +275,7 @@ function renderSidebarNav(byCat) {
     ["foundry", "Foundry"],
     ["cli-ref", "CLI reference"],
     ["testing", "Testing"],
+    ["benchmarks", "Constraint benchmarks"],
     ["security", "Security"],
     ["comments", "Comment format"],
   ];
@@ -296,8 +299,56 @@ function countTemplates(byCat) {
   return n;
 }
 
+function loadConstraintBenchmarks() {
+  if (!fs.existsSync(BENCH_JSON)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(BENCH_JSON, "utf8"));
+  } catch (e) {
+    console.warn("Could not read constraints benchmark JSON:", e.message);
+    return null;
+  }
+}
+
+function renderConstraintBenchmarksHtml(bench) {
+  if (!bench || !Array.isArray(bench.circuits) || bench.circuits.length === 0) {
+    return `<section class="docs-section" id="benchmarks">
+        <h2>Constraint benchmarks</h2>
+        <p>Run <code>npm run bench:constraints</code> to compile every wrapper in <code>test/circuits/</code> and write <code>docs/benchmarks/constraints.json</code>, then regenerate this page with <code>npm run docs</code>.</p>
+      </section>`;
+  }
+  const rows = bench.circuits
+    .filter((c) => !c.skipped && !c.error && c.nonLinearConstraints != null)
+    .sort((a, b) => b.nonLinearConstraints - a.nonLinearConstraints)
+    .map((c) => {
+      const total = c.nonLinearConstraints + (c.linearConstraints || 0);
+      return `<tr><td><code>${htmlEscape(c.file)}</code></td><td>${c.nonLinearConstraints.toLocaleString()}</td><td>${(c.linearConstraints || 0).toLocaleString()}</td><td>${total.toLocaleString()}</td><td>${c.publicInputs}</td><td>${c.privateInputs}</td><td>${c.publicOutputs}</td></tr>`;
+    })
+    .join("\n");
+  const skipped = bench.circuits.filter((c) => c.skipped);
+  let skippedNote = "";
+  if (skipped.length) {
+    skippedNote = `<p class="docs-muted">Skipped ${skipped.length} circuit(s) with Merkle depth ≥ 20: ${skipped.map((c) => `<code>${htmlEscape(c.file)}</code>`).join(", ")}.</p>`;
+  }
+  const meta = `Generated ${htmlEscape(bench.generatedAt || "")} with Circom ${htmlEscape(bench.circomVersion || "?")} from <code>test/circuits/*.circom</code> (R1CS only).`;
+  return `<section class="docs-section" id="benchmarks">
+        <h2>Constraint benchmarks</h2>
+        <p>${meta} Regenerate with <code>npm run bench:constraints</code> then <code>npm run docs</code>.</p>
+        ${skippedNote}
+        <div class="docs-table-wrap">
+          <table class="docs-table">
+            <thead><tr><th>Test wrapper</th><th>Non-linear</th><th>Linear</th><th>Total</th><th>Public in</th><th>Private in</th><th>Public out</th></tr></thead>
+            <tbody>
+${rows}
+            </tbody>
+          </table>
+        </div>
+      </section>`;
+}
+
 function renderDocumentationHtml(byCat) {
   const templateCount = countTemplates(byCat);
+  const bench = loadConstraintBenchmarks();
+  const benchmarksSection = renderConstraintBenchmarksHtml(bench);
   const categoryBlocks = CATEGORY_ORDER.filter((c) => byCat[c]).map((c) => renderCategoryHtml(c, byCat[c])).join("\n");
   const otherBlock = byCat.other ? renderCategoryHtml("other", byCat.other) : "";
 
@@ -306,7 +357,7 @@ function renderDocumentationHtml(byCat) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="OpenCircom v0.10.0 documentation — installation, CLI, Hardhat/Foundry integration, security, and full circuit template reference." />
+  <meta name="description" content="OpenCircom v${PKG_VERSION} documentation — installation, CLI, Hardhat/Foundry integration, constraint benchmarks, security, and full circuit template reference." />
   <title>Documentation — OpenCircom</title>
   <link rel="icon" href="assets/img/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -343,7 +394,7 @@ function renderDocumentationHtml(byCat) {
       <header class="docs-header">
         <p class="section-label">Documentation</p>
         <h1>OpenCircom reference</h1>
-        <p class="docs-lead">v0.10.0 — ${templateCount} circuit templates, CLI tooling, integration guides, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
+        <p class="docs-lead">v${PKG_VERSION} — ${templateCount} circuit templates, CLI tooling, integration guides, constraint benchmarks, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
       </header>
 
       <section class="docs-section" id="overview">
@@ -356,7 +407,7 @@ function renderDocumentationHtml(byCat) {
         <h2>Installation</h2>
         <pre class="code-block"><code class="language-bash">npm install opencircom</code></pre>
         <p>Peer dependency: <strong>circom 2.x</strong> must be installed and available on <code>PATH</code>. OpenCircom does not bundle the compiler.</p>
-        <p>Package version: <code>^0.10.0</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
+        <p>Package version: <code>^${PKG_VERSION}</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
       </section>
 
       <section class="docs-section" id="includes">
@@ -400,7 +451,7 @@ npx opencircom path</code></pre>
 
       <section class="docs-section" id="cli-ref">
         <h2>CLI reference</h2>
-        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+; current <code>^0.10.0</code>):</p>
+        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+; current <code>^${PKG_VERSION}</code>):</p>
         <div class="docs-table-wrap">
           <table class="docs-table">
             <thead><tr><th>Command</th><th>Description</th></tr></thead>
@@ -425,6 +476,8 @@ npm test</code></pre>
         <p><code>npm test</code> runs <code>compile:test</code> (all test circuits) then <code>setup:zk</code> (ptau + zkey). First run can take about a minute.</p>
         <p>Coverage includes hashing, comparators, Merkle (inclusion, sparse, incremental, update, allowlist), identity, nullifiers, voting, MACI, arithmetic, utils, string validation, and full Groth16 prove/verify flows.</p>
       </section>
+
+      ${benchmarksSection}
 
       <section class="docs-section" id="security">
         <h2>Security</h2>
@@ -482,7 +535,7 @@ npm test</code></pre>
         <a href="https://www.npmjs.com/package/opencircom">npm</a>
         <a href="https://github.com/jose-compu/opencircom/blob/main/LICENSE">MIT License</a>
       </div>
-      <p class="footer-copy">OpenCircom v0.10.0 · Generated by <code>npm run docs</code></p>
+      <p class="footer-copy">OpenCircom v${PKG_VERSION} · Generated by <code>npm run docs</code></p>
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>

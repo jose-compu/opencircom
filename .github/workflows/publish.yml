@@ -169,9 +169,19 @@ jobs:
         if: steps.recheck.outputs.skip_publish != 'true'
         run: |
           set -euo pipefail
-          PUBLISHED="$(npm view "opencircom@${version}" version)"
-          if [ "$PUBLISHED" != "$version" ]; then
-            echo "Expected opencircom@${version} to be $version, got $PUBLISHED"
-            exit 1
-          fi
-          echo "Confirmed opencircom@${version} on npm"
+          DELAYS="0 5 10 20 30 55"
+          PUBLISHED=""
+          for delay in $DELAYS; do
+            if [ "$delay" -gt 0 ]; then
+              echo "Waiting ${delay}s for npm registry…"
+              sleep "$delay"
+            fi
+            PUBLISHED="$(npm view "opencircom@${version}" version 2>/dev/null || true)"
+            if [ "$PUBLISHED" = "$version" ]; then
+              echo "Confirmed opencircom@${version} on npm"
+              exit 0
+            fi
+            echo "opencircom@${version} not visible yet (got: ${PUBLISHED:-<empty>})"
+          done
+          echo "Expected opencircom@${version} to be $version, got $PUBLISHED"
+          exit 1
