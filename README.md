@@ -2,7 +2,7 @@
 
 ![opencircom logo](logo.png)
 
-![OpenCircom v0.10.0 release banner](assets/banners/v0.10.0.png)
+![OpenCircom v0.10.1 release banner](assets/banners/v0.10.1.png)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Circom](https://img.shields.io/badge/Circom-ZK%20Circuits-8B5CF6)](https://docs.circom.io/)
@@ -56,7 +56,7 @@ From npm:
 npm install opencircom
 ```
 
-Or add to your `package.json`: `"opencircom": "^0.10.0"`.
+Or add to your `package.json`: `"opencircom": "^0.10.1"`.
 
 ### Hardhat
 
@@ -100,6 +100,22 @@ npm run docs
 ```
 
 Output markdown is written to **docs/api/**; the HTML documentation page at **docs/documentation.html** is regenerated at the same time.
+
+Constraint counts for each test wrapper circuit are recorded in **docs/benchmarks/constraints.json** (`npm run bench:constraints`) and rendered in **docs/documentation.html#benchmarks**.
+
+### Constraint benchmarks (sample)
+
+| Test wrapper | Non-linear constraints | Notes |
+| --- | ---: | --- |
+| `sha256_test.circom` | 59,313 | Full SHA-256 block wrapper used in tests. |
+| `sha256_256_test.circom` | 29,412 | 256-bit SHA-256 input. |
+| `maci_message_roundtrip_test.circom` | 3,696 | MACI encrypt/decrypt roundtrip. |
+| `allowlist_membership_test.circom` | 924 | Poseidon leaf + Merkle allowlist path. |
+| `merkle_test.circom` | 708 | `MerkleInclusionProof(2)`. |
+| `poseidon_test.circom` | 264 | `Poseidon(1)` smoke test. |
+| `safe_wrappers_test.circom` | 44 | SafeAND / SafeOR / SafeMux smoke test. |
+
+Full table: [documentation — constraint benchmarks](./docs/documentation.html#benchmarks).
 
 ## Circuits
 
@@ -162,7 +178,7 @@ Planned or community-requested; not yet implemented:
 - **Signatures**: EdDSA verify (Baby JubJub) and ECDSA verify (secp256k1) are deferred (high constraint cost / implementation effort).
 - **Encryption**: ElGamal and ECDH shared secret deferred (curve cost). Symmetric (Poseidon-based) implemented as `PoseidonEncrypt()`.
 - **Identity & credentials**: Semaphore-style commitment implemented (`IdentityCommitment`, `SemaphoreMembership`). Age/threshold implemented (`AgeThresholdProof`). Selective disclosure buildable from RangeProof + Merkle + commitments.
-- **Trust / tooling (v0.10.0+)**: Constraint-count benchmarks per template (`#13`); Poseidon cross-library compatibility tests vs circomlib (`#19`).
+- **Trust / tooling (v0.10.1+)**: Constraint-count benchmarks per template — implemented in 0.10.1 (`#13` closed); Poseidon cross-library compatibility tests vs circomlib (`#19`).
 - **Set membership**: Accumulator-based membership implemented (`AccumulatorMembership(n)`, uses PoEVerify). Merkle/sparse already done.
 - **Payments**: Confidential transfer and mixer (deposit/withdraw) deferred to application repos; build with Merkle, Nullifier, BalanceProof from this lib.
 - **String & data**: UTF-8 validation and simple fixed/range patterns implemented; full regex and JSON field extraction deferred.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="OpenCircom — reusable Circom ZK circuit templates. Hashing, Merkle trees, voting, MACI, identity. No circomlib dependency. v0.10.0." />
+  <meta name="description" content="OpenCircom — reusable Circom ZK circuit templates. Hashing, Merkle trees, voting, MACI, identity. No circomlib dependency. v0.10.1." />
   <title>OpenCircom — Reusable ZK Circuits</title>
   <link rel="icon" href="assets/img/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -36,7 +36,7 @@
       <div class="container hero-grid">
         <div>
           <p class="section-label">Zero-knowledge circuits</p>
-          <p class="version-badge">v0.10.0</p>
+          <p class="version-badge">v0.10.1</p>
           <h1>
             <span class="word-blue">Reusable.</span>
             <span class="word-silver">Secure.</span>
@@ -50,8 +50,8 @@
             <a class="btn btn-ghost" href="documentation.html">Documentation</a>
           </div>
           <aside class="diagram-card" style="margin-top: 1.25rem;">
-            <h3>New in v0.10.0</h3>
-            <p>Safe wrappers for XOR, NOT, NAND, NOR, and multi-channel muxes reject any bit or selector that is not 0 or 1 before the underlying gate runs.</p>
+            <h3>New in v0.10.1</h3>
+            <p><code>npm run bench:constraints</code> compiles every test wrapper circuit and records R1CS constraint counts in the docs and README — sized for Poseidon, SHA-256, Merkle paths, and more.</p>
           </aside>
           <div class="badges">
             <a href="https://www.npmjs.com/package/opencircom"><img src="https://img.shields.io/npm/v/opencircom.svg?style=flat-square&amp;label=npm" alt="npm version" /></a>
@@ -146,7 +146,7 @@
     <section id="circuits">
       <div class="container">
         <span class="section-label">Library</span>
-        <h2>Circuit categories — v0.10.0</h2>
+        <h2>Circuit categories — v0.10.1</h2>
         <p class="section-intro">
           Templates span hashing, set membership, identity, voting, and MACI building blocks.
           Run <code>npx opencircom list</code> for the full catalog with descriptions, or see the <a href="documentation.html#reference">documentation reference</a>.
@@ -270,7 +270,7 @@
     <section id="documentation" class="alt">
       <div class="container">
         <span class="section-label">Documentation</span>
-        <h2>Full reference — v0.10.0</h2>
+        <h2>Full reference — v0.10.1</h2>
         <p class="section-intro">
           Installation guides, Hardhat/Foundry integration, CLI commands, security notes, and a searchable catalog of every circuit template with inputs, outputs, and parameters.
         </p>
@@ -357,7 +357,7 @@ template MyCircuit(levels) {
         <a href="documentation.html">Documentation</a>
         <a href="https://github.com/jose-compu/opencircom/blob/main/LICENSE">MIT License</a>
       </div>
-      <p class="footer-copy">OpenCircom v0.10.0 · Jose (<a href="https://github.com/jose-compu">@jose-compu</a>)</p>
+      <p class="footer-copy">OpenCircom v0.10.1 · Jose (<a href="https://github.com/jose-compu">@jose-compu</a>)</p>
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>

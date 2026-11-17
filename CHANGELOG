@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.10.1
+
+- Trust / tooling: `npm run bench:constraints` compiles `test/circuits/*.circom` (R1CS only) and records non-linear, linear, and I/O counts in `docs/benchmarks/constraints.json`; README and generated docs show a constraint table (`#13`).
+- CI: non-blocking `bench` job runs `bench:constraints` on Circom 2.2.3.
+- Publish: npm confirm step retries `npm view` with backoff (0, 5, 10, 20, 30, 55 s) for registry lag.
+
 ## 0.10.0
 
 - Gates: `SafeXOR()`, `SafeNOT()`, `SafeNAND()`, `SafeNOR()` binary-constrain inputs, then call raw gates (#38).
