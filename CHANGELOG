@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.10.2
+
+- Tests: Poseidon widths 1, 2, 3, 4, and 16 match circomlib (JS reference via `circomlibjs`) on fixed vectors (`#19`). Hash circuits unchanged. `circomlib` is a devDependency only (test reference; not published).
+- Docs: Foundry submodule URL is `jose-compu/opencircom`.
+
 ## 0.10.1
 
 - Trust / tooling: `npm run bench:constraints` compiles `test/circuits/*.circom` (R1CS only) and records non-linear, linear, and I/O counts in `docs/benchmarks/constraints.json`; README and generated docs show a constraint table (`#13`).

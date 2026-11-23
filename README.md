@@ -2,11 +2,11 @@
 
 ![opencircom logo](logo.png)
 
-![OpenCircom v0.10.1 release banner](assets/banners/v0.10.1.png)
+![OpenCircom v0.10.2 release banner](assets/banners/v0.10.2.png)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Circom](https://img.shields.io/badge/Circom-ZK%20Circuits-8B5CF6)](https://docs.circom.io/)
-[![Tests](https://img.shields.io/badge/tests-178%2B%20passing-success)](./test)
+[![Tests](https://img.shields.io/badge/tests-202%2B%20passing-success)](./test)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.18-brightgreen)](https://nodejs.org/)
 [![No circomlib](https://img.shields.io/badge/deps-no%20circomlib-informational)](./circuits)
 
@@ -56,7 +56,7 @@ From npm:
 npm install opencircom
 ```
 
-Or add to your `package.json`: `"opencircom": "^0.10.1"`.
+Or add to your `package.json`: `"opencircom": "^0.10.2"`.
 
 ### Hardhat
 
@@ -73,7 +73,7 @@ Or add to your `package.json`: `"opencircom": "^0.10.1"`.
 
 1. Add `opencircom` via npm (`npm install opencircom`) or as a Git submodule:
    ```bash
-   git submodule add https://github.com/jose-blockchain/opencircom.git lib/opencircom
+   git submodule add https://github.com/jose-compu/opencircom.git lib/opencircom
    ```
 2. In a script, run `circom` with the opencircom circuits on the include path:
    - npm: `-l node_modules/opencircom/circuits`
@@ -178,7 +178,7 @@ Planned or community-requested; not yet implemented:
 - **Signatures**: EdDSA verify (Baby JubJub) and ECDSA verify (secp256k1) are deferred (high constraint cost / implementation effort).
 - **Encryption**: ElGamal and ECDH shared secret deferred (curve cost). Symmetric (Poseidon-based) implemented as `PoseidonEncrypt()`.
 - **Identity & credentials**: Semaphore-style commitment implemented (`IdentityCommitment`, `SemaphoreMembership`). Age/threshold implemented (`AgeThresholdProof`). Selective disclosure buildable from RangeProof + Merkle + commitments.
-- **Trust / tooling (v0.10.1+)**: Constraint-count benchmarks per template — implemented in 0.10.1 (`#13` closed); Poseidon cross-library compatibility tests vs circomlib (`#19`).
+- **Trust / tooling (v0.10.1+)**: Constraint-count benchmarks per template — implemented in 0.10.1 (`#13` closed). Poseidon vs circomlib compatibility checks — implemented in 0.10.2 (`#19` closed); `circomlib` 2.0.5 is a dev-only test reference.
 - **Set membership**: Accumulator-based membership implemented (`AccumulatorMembership(n)`, uses PoEVerify). Merkle/sparse already done.
 - **Payments**: Confidential transfer and mixer (deposit/withdraw) deferred to application repos; build with Merkle, Nullifier, BalanceProof from this lib.
 - **String & data**: UTF-8 validation and simple fixed/range patterns implemented; full regex and JSON field extraction deferred.
@@ -193,7 +193,7 @@ Contributions welcome; open an issue to propose or prioritize.
 - **Age proofs**: `AgeThresholdProof` only checks year arithmetic; `currentYear` / `minAge` must come from a trusted source (public input or oracle).
 - **Merkle**: `pathIndices[i]` are constrained binary in-circuit; `Switcher` constrains `sel` to {0,1}.
 - **Nullifier**: Use a unique `externalNullifier` per action to avoid cross-action replay.
-- **Hashing**: Poseidon uses standard Hades parameters (same as circomlib); constants in `circuits/hashing/poseidon_constants.circom`.
+- **Hashing**: Poseidon uses standard Hades parameters (same as circomlib); constants in `circuits/hashing/poseidon_constants.circom`. `test/poseidon_compat_test.js` compares witness outputs to circomlib’s JS Poseidon (`circomlibjs`, dev-only; pinned `circomlib` 2.0.5).
 - **Audit**: An internal security audit (0.5.0) fixed binary constraints and range checks in Switcher, ForceEqualIfEnabled, IncrementalMerkleInclusion, DivRem, and PadPKCS7. Safe* wrappers added in 0.8.0. VoteCommit choice and MACI nonce range checks hardened in 0.8.1. See [CHANGELOG](CHANGELOG) and the pre-deployment checklist in [SECURITY.md](SECURITY.md).
 
 See [SECURITY.md](SECURITY.md) for more.
@@ -227,7 +227,7 @@ From this repo, `npm run compile:test` compiles every file in `test/circuits/` b
 
 Tests use **real** ZK where applicable: circuits are compiled with Circom, then a small Powers of Tau and zkey are generated, and a Groth16 proof is created and verified with snarkjs (no mocks).
 
-**Coverage** (188+ tests): Poseidon, PoseidonEncrypt, SHA-256, Comparators (incl. AgeThresholdProof), IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates (incl. SafeAND/SafeOR/SafeXOR/SafeNOT/SafeNAND/SafeNOR), Bitify (incl. SafeBits2Num), Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2/SafeMux1/SafeMux2/SafeMultiMux1/SafeMultiMux2, MuxN, Arithmetic (incl. PoEVerify), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist, SortedCheck, IsPermutation), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, MACI, and one full Groth16 prove/verify.
+**Coverage** (202+ tests): Poseidon (incl. circomlib compatibility), PoseidonEncrypt, SHA-256, Comparators (incl. AgeThresholdProof), IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates (incl. SafeAND/SafeOR/SafeXOR/SafeNOT/SafeNAND/SafeNOR), Bitify (incl. SafeBits2Num), Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2/SafeMux1/SafeMux2/SafeMultiMux1/SafeMultiMux2, MuxN, Arithmetic (incl. PoEVerify), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist, SortedCheck, IsPermutation), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, MACI, and one full Groth16 prove/verify.
 
 ```bash
 npm install

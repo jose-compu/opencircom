@@ -1,7 +1,7 @@
 {
-  "packageVersion": "0.10.1",
+  "packageVersion": "0.10.2",
   "circomVersion": "2.2.3",
-  "generatedAt": "2026-11-17T09:09:06.234Z",
+  "generatedAt": "2026-11-23T16:10:24.223Z",
   "source": "test/circuits/*.circom",
   "circuits": [
     {
@@ -387,6 +387,28 @@
       "linearConstraints": 384,
       "publicInputs": 0,
       "privateInputs": 7,
+      "publicOutputs": 1
+    },
+    {
+      "file": "poseidon_compat_1.circom",
+      "path": "test/circuits/poseidon_compat_1.circom",
+      "skipped": false,
+      "skipReason": null,
+      "nonLinearConstraints": 216,
+      "linearConstraints": 216,
+      "publicInputs": 0,
+      "privateInputs": 1,
+      "publicOutputs": 1
+    },
+    {
+      "file": "poseidon_compat_16.circom",
+      "path": "test/circuits/poseidon_compat_16.circom",
+      "skipped": false,
+      "skipReason": null,
+      "nonLinearConstraints": 612,
+      "linearConstraints": 612,
+      "publicInputs": 0,
+      "privateInputs": 16,
       "publicOutputs": 1
     },
     {
