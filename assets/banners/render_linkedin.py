@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 ROOT = Path(__file__).resolve().parents[2]
 FONTS_DIR = Path(__file__).resolve().parent / "fonts"
 DEFAULT_LOGO = ROOT / "logo.png"
-DEFAULT_OUT = Path(__file__).resolve().parent / "v0.10.0.png"
+BANNERS_DIR = Path(__file__).resolve().parent
 
 # Site palette (docs/css/style.css)
 BG = (11, 14, 17)
@@ -63,6 +63,22 @@ def load_share_tech_mono(size: int) -> ImageFont.FreeTypeFont:
 
 def _line_width(draw: ImageDraw.ImageDraw, line: str, font: ImageFont.ImageFont) -> int:
     return draw.textbbox((0, 0), line, font=font)[2]
+
+
+def _assert_line_fits(
+    draw: ImageDraw.ImageDraw,
+    line: str,
+    font: ImageFont.ImageFont,
+    max_width: int,
+    label: str,
+) -> None:
+    width = _line_width(draw, line, font)
+    if width > max_width:
+        print(
+            f"ERROR: {label} is wider than its box ({width}px > {max_width}px): {line!r}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 def _last_line_ok(line: str) -> bool:
@@ -264,7 +280,7 @@ def render_banner(cfg: dict, logo_path: Path, out_path: Path) -> None:
     draw = ImageDraw.Draw(img)
     draw.text((name_x, 128), "A library of Circom 2.x circuit templates", font=tag_font, fill=SILVER)
 
-    ver = cfg.get("version", "v0.10.0")
+    ver = cfg["version"]
     ver_w = draw.textlength(ver, font=ver_font)
     ver_xy = (int(w - 64 - ver_w), 78)
     badge_pad_x, badge_pad_y = 12, 8
@@ -274,8 +290,9 @@ def render_banner(cfg: dict, logo_path: Path, out_path: Path) -> None:
     glow_text(img, ver_xy, ver, ver_font, SILVER, glow_rgb=BLUE, blur_radius=10, glow_alpha=80)
     draw = ImageDraw.Draw(img)
 
-    title = cfg.get("title", "Safe gate & mux wrappers")
+    title = cfg["title"]
     date = cfg.get("date", "2026-11-16")
+    _assert_line_fits(draw, title, title_font, body_max_w, "title")
     y_title = 178
     glow_text(img, (content_x, y_title), title, title_font, TEXT, glow_rgb=BLUE_BRIGHT, blur_radius=8, glow_alpha=60)
     draw = ImageDraw.Draw(img)
@@ -291,12 +308,10 @@ def render_banner(cfg: dict, logo_path: Path, out_path: Path) -> None:
         width=1,
     )
 
-    summary = cfg.get(
-        "summary",
-        "Safe wrappers for XOR, NOT, NAND, NOR, and the multi-channel muxes "
-        "now reject any bit or selector that is not 0 or 1.",
-    )
+    summary = cfg["summary"]
     summary_lines = wrap_text(draw, summary, body_font, body_max_w)
+    for i, line in enumerate(summary_lines, start=1):
+        _assert_line_fits(draw, line, body_font, body_max_w, f"summary line {i}")
     line_h = 42
     body_block_h = line_h * len(summary_lines)
     footer_top = h - 132
@@ -309,8 +324,11 @@ def render_banner(cfg: dict, logo_path: Path, out_path: Path) -> None:
         draw.text((content_x, y_body), line, font=body_font, fill=body_fill)
         y_body += line_h
 
-    pkg_line = cfg.get("package_line", f"opencircom · {ver.lstrip('v')}")
-    install = cfg.get("install", "npm install opencircom@0.10.0")
+    pkg_line = cfg["package_line"]
+    install = cfg["install"]
+    footer_max_w = w - frame_margin - 28 - content_x
+    _assert_line_fits(draw, pkg_line, pkg_font, footer_max_w, "package line")
+    _assert_line_fits(draw, install, mono_font, footer_max_w, "install line")
 
     draw.line([(content_x, h - 132), (w - frame_margin - 28, h - 132)], fill=(40, 70, 95), width=1)
     draw.text((content_x, h - 108), pkg_line, font=pkg_font, fill=SILVER)
@@ -323,34 +341,45 @@ def render_banner(cfg: dict, logo_path: Path, out_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Render OpenCircom LinkedIn release banner (1200x627).")
-    parser.add_argument("--json", type=Path, help="Optional JSON config for title, version, date, summary, install.")
+    parser.add_argument("--json", type=Path, help="Optional JSON config (must include version, title, summary).")
     parser.add_argument("--logo", type=Path, default=DEFAULT_LOGO)
-    parser.add_argument("-o", "--output", type=Path, default=DEFAULT_OUT)
-    parser.add_argument("--version", default="v0.10.0")
-    parser.add_argument("--title", default="Safe gate & mux wrappers")
+    parser.add_argument("-o", "--output", type=Path, default=None)
+    parser.add_argument("--version", required=False, help="Release label, e.g. v0.10.3")
+    parser.add_argument("--title", required=False)
     parser.add_argument("--date", default="2026-11-16")
-    parser.add_argument(
-        "--summary",
-        default=(
-            "Safe wrappers for XOR, NOT, NAND, NOR, and the multi-channel muxes "
-            "now reject any bit or selector that is not 0 or 1."
-        ),
-    )
-    parser.add_argument("--install", default="npm install opencircom@0.10.0")
+    parser.add_argument("--summary", required=False)
+    parser.add_argument("--install", default=None, help="npm install line; defaults from --version")
     args = parser.parse_args()
 
     if args.json and args.json.is_file():
         cfg = json.loads(args.json.read_text(encoding="utf-8"))
+        for key in ("version", "title", "summary"):
+            if key not in cfg:
+                print(f"ERROR: --json config missing required key: {key}", file=sys.stderr)
+                sys.exit(1)
+        version = cfg["version"]
+        out_path = args.output if args.output is not None else BANNERS_DIR / f"{version}.png"
+        if "install" not in cfg:
+            cfg["install"] = f"npm install opencircom@{version.lstrip('v')}"
+        if "package_line" not in cfg:
+            cfg["package_line"] = f"opencircom · {version.lstrip('v')}"
     else:
+        missing = [name for name, val in (("version", args.version), ("title", args.title), ("summary", args.summary)) if not val]
+        if missing:
+            parser.error(f"the following arguments are required: {', '.join('--' + m for m in missing)}")
+        version = args.version
+        ver_num = version.lstrip("v")
+        install = args.install if args.install is not None else f"npm install opencircom@{ver_num}"
+        out_path = args.output if args.output is not None else BANNERS_DIR / f"{version}.png"
         cfg = {
-            "version": args.version,
+            "version": version,
             "title": args.title,
             "date": args.date,
             "summary": args.summary,
-            "install": args.install,
-            "package_line": f"opencircom · {args.version.lstrip('v')}",
+            "install": install,
+            "package_line": f"opencircom · {ver_num}",
         }
-    render_banner(cfg, args.logo, args.output)
+    render_banner(cfg, args.logo, out_path)
 
 
 if __name__ == "__main__":

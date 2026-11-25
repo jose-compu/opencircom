@@ -2,7 +2,7 @@
 
 ![opencircom logo](logo.png)
 
-![OpenCircom v0.10.2 release banner](assets/banners/v0.10.2.png)
+![OpenCircom v0.10.3 release banner](assets/banners/v0.10.3.png)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Circom](https://img.shields.io/badge/Circom-ZK%20Circuits-8B5CF6)](https://docs.circom.io/)
@@ -56,7 +56,7 @@ From npm:
 npm install opencircom
 ```
 
-Or add to your `package.json`: `"opencircom": "^0.10.2"`.
+Or add to your `package.json`: `"opencircom": "^0.10.3"`.
 
 ### Hardhat
 
