@@ -1,7 +1,7 @@
 {
-  "packageVersion": "0.10.2",
+  "packageVersion": "0.10.3",
   "circomVersion": "2.2.3",
-  "generatedAt": "2026-11-23T16:10:24.223Z",
+  "generatedAt": "2026-11-25T00:34:54.041Z",
   "source": "test/circuits/*.circom",
   "circuits": [
     {

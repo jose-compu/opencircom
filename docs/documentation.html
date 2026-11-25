@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="OpenCircom v0.10.2 documentation — installation, CLI, Hardhat/Foundry integration, constraint benchmarks, security, and full circuit template reference." />
+  <meta name="description" content="OpenCircom v0.10.3 documentation — installation, CLI, Hardhat/Foundry integration, constraint benchmarks, security, and full circuit template reference." />
   <title>Documentation — OpenCircom</title>
   <link rel="icon" href="assets/img/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -40,7 +40,7 @@
       <header class="docs-header">
         <p class="section-label">Documentation</p>
         <h1>OpenCircom reference</h1>
-        <p class="docs-lead">v0.10.2 — 110 circuit templates, CLI tooling, integration guides, constraint benchmarks, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
+        <p class="docs-lead">v0.10.3 — 110 circuit templates, CLI tooling, integration guides, constraint benchmarks, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
       </header>
 
       <section class="docs-section" id="overview">
@@ -53,7 +53,7 @@
         <h2>Installation</h2>
         <pre class="code-block"><code class="language-bash">npm install opencircom</code></pre>
         <p>Peer dependency: <strong>circom 2.x</strong> must be installed and available on <code>PATH</code>. OpenCircom does not bundle the compiler.</p>
-        <p>Package version: <code>^0.10.2</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
+        <p>Package version: <code>^0.10.3</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
       </section>
 
       <section class="docs-section" id="includes">
@@ -97,7 +97,7 @@ npx opencircom path</code></pre>
 
       <section class="docs-section" id="cli-ref">
         <h2>CLI reference</h2>
-        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+; current <code>^0.10.2</code>):</p>
+        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+; current <code>^0.10.3</code>):</p>
         <div class="docs-table-wrap">
           <table class="docs-table">
             <thead><tr><th>Command</th><th>Description</th></tr></thead>
@@ -125,7 +125,7 @@ npm test</code></pre>
 
       <section class="docs-section" id="benchmarks">
         <h2>Constraint benchmarks</h2>
-        <p>Generated 2026-11-17T09:09:06.234Z with Circom 2.2.3 from <code>test/circuits/*.circom</code> (R1CS only). Regenerate with <code>npm run bench:constraints</code> then <code>npm run docs</code>.</p>
+        <p>Generated 2026-11-25T00:34:54.041Z with Circom 2.2.3 from <code>test/circuits/*.circom</code> (R1CS only). Regenerate with <code>npm run bench:constraints</code> then <code>npm run docs</code>.</p>
         
         <div class="docs-table-wrap">
           <table class="docs-table">
@@ -144,6 +144,7 @@ npm test</code></pre>
 <tr><td><code>sparse_merkle_exclusion_test.circom</code></td><td>708</td><td>708</td><td>1,416</td><td>0</td><td>4</td><td>1</td></tr>
 <tr><td><code>sparse_merkle_inclusion_test.circom</code></td><td>708</td><td>708</td><td>1,416</td><td>0</td><td>5</td><td>1</td></tr>
 <tr><td><code>maci_vote_decrypt_verify_test.circom</code></td><td>682</td><td>682</td><td>1,364</td><td>2</td><td>9</td><td>1</td></tr>
+<tr><td><code>poseidon_compat_16.circom</code></td><td>612</td><td>612</td><td>1,224</td><td>0</td><td>16</td><td>1</td></tr>
 <tr><td><code>utf8_validation_test.circom</code></td><td>513</td><td>513</td><td>1,026</td><td>0</td><td>4</td><td>0</td></tr>
 <tr><td><code>maci_command_pack_test.circom</code></td><td>510</td><td>510</td><td>1,020</td><td>0</td><td>5</td><td>1</td></tr>
 <tr><td><code>poseidon_merkle_helper.circom</code></td><td>459</td><td>459</td><td>918</td><td>0</td><td>3</td><td>2</td></tr>
@@ -160,6 +161,7 @@ npm test</code></pre>
 <tr><td><code>nullifier_test.circom</code></td><td>243</td><td>243</td><td>486</td><td>0</td><td>2</td><td>1</td></tr>
 <tr><td><code>poseidon2_test.circom</code></td><td>243</td><td>243</td><td>486</td><td>0</td><td>2</td><td>1</td></tr>
 <tr><td><code>pad_pkcs7_test.circom</code></td><td>218</td><td>218</td><td>436</td><td>0</td><td>9</td><td>0</td></tr>
+<tr><td><code>poseidon_compat_1.circom</code></td><td>216</td><td>216</td><td>432</td><td>0</td><td>1</td><td>1</td></tr>
 <tr><td><code>balance_proof_test.circom</code></td><td>170</td><td>170</td><td>340</td><td>0</td><td>3</td><td>0</td></tr>
 <tr><td><code>divrem_test.circom</code></td><td>156</td><td>156</td><td>312</td><td>0</td><td>4</td><td>2</td></tr>
 <tr><td><code>age_threshold_test.circom</code></td><td>136</td><td>136</td><td>272</td><td>0</td><td>3</td><td>1</td></tr>
@@ -1312,7 +1314,7 @@ npm test</code></pre>
         <a href="https://www.npmjs.com/package/opencircom">npm</a>
         <a href="https://github.com/jose-compu/opencircom/blob/main/LICENSE">MIT License</a>
       </div>
-      <p class="footer-copy">OpenCircom v0.10.2 · Generated by <code>npm run docs</code></p>
+      <p class="footer-copy">OpenCircom v0.10.3 · Generated by <code>npm run docs</code></p>
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>

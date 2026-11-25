@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.10.3
+
+- Publish: the confirm step polls `https://registry.npmjs.org/opencircom/${version}` every 15s for up to about 5 minutes; if the version is still not visible it emits `::warning::` and exits 0. `npm publish` exiting 0 remains the success signal. OIDC only (`id-token: write`, npm `>=11.5.1 <12`).
+- Banners: `assets/banners/render_linkedin.py` requires `--version`, `--title`, and `--summary`, writes `assets/banners/vX.Y.Z.png` when `-o` is omitted, and exits non-zero if any rendered line is wider than its box.
+
 ## 0.10.2
 
 - Tests: Poseidon widths 1, 2, 3, 4, and 16 match circomlib (JS reference via `circomlibjs`) on fixed vectors (`#19`). Hash circuits unchanged. `circomlib` is a devDependency only (test reference; not published).

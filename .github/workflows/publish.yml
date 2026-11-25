@@ -169,19 +169,18 @@ jobs:
         if: steps.recheck.outputs.skip_publish != 'true'
         run: |
           set -euo pipefail
-          DELAYS="0 5 10 20 30 55"
-          PUBLISHED=""
-          for delay in $DELAYS; do
-            if [ "$delay" -gt 0 ]; then
-              echo "Waiting ${delay}s for npm registry…"
-              sleep "$delay"
-            fi
-            PUBLISHED="$(npm view "opencircom@${version}" version 2>/dev/null || true)"
-            if [ "$PUBLISHED" = "$version" ]; then
-              echo "Confirmed opencircom@${version} on npm"
+          MAX_CHECKS=21
+          URL="https://registry.npmjs.org/opencircom/${version}"
+          for i in $(seq 1 "$MAX_CHECKS"); do
+            CODE="$(curl -s -o /dev/null -w '%{http_code}' "$URL" || true)"
+            if [ "$CODE" = "200" ]; then
+              echo "Confirmed opencircom@${version} on npm (${URL})"
               exit 0
             fi
-            echo "opencircom@${version} not visible yet (got: ${PUBLISHED:-<empty>})"
+            echo "Check ${i}/${MAX_CHECKS}: ${URL} returned ${CODE} (not yet on registry)"
+            if [ "$i" -lt "$MAX_CHECKS" ]; then
+              sleep 15
+            fi
           done
-          echo "Expected opencircom@${version} to be $version, got $PUBLISHED"
-          exit 1
+          echo "::warning::opencircom@${version} still not visible at ${URL} after about 5 minutes; npm publish succeeded."
+          exit 0
