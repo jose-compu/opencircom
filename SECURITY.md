@@ -31,6 +31,13 @@ Raw `AND`, `OR`, `XOR`, `NOT`, `NAND`, `NOR`, `Mux1`, `Mux2`, `MultiMux1`, `Mult
 
 ## Per-component notes
 
+### Fixed-point arithmetic (`FixedPointAdd`, `FixedPointMul`, `FixedPointCompare`)
+
+- Operands must share the same `scale`; values are n-bit base units (integer × 10^scale off-circuit).
+- Require `n <= 126` and `10^scale < 2^n` so products and `LessThan` stay sound after `StrictNum2Bits(n)`.
+- `FixedPointMul` uses **floor** division by `10^scale` (not half-up); prover supplies correct `q` and `r` or constraints fail.
+- `FixedPointAdd` rejects sum overflow via `StrictNum2Bits` on the result.
+
 ### Comparators (`LessThan`, `GreaterThan`, `AgeThresholdProof`, etc.)
 
 - Parameter `n`: inputs must be in range `[0, 2^n - 1]`. Use `n` large enough (e.g. 64 or 253) for your application.

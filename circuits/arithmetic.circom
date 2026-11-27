@@ -129,3 +129,108 @@ template ExpByBits(n) {
     }
     out <== r[n];
 }
+
+function pow10(scale) {
+    var p = 1;
+    for (var i = 0; i < scale; i++) {
+        p = p * 10;
+    }
+    return p;
+}
+
+/**
+ * @title FixedPointAdd
+ * @notice Same-scale fixed-point addition on n-bit base-unit integers (overflow rejected).
+ * @dev Operands share decimal scale off-circuit; values are stored as integers × 10^scale. Sum is range-checked with StrictNum2Bits(n). Requires n <= 126 and 10^scale < 2^n.
+ * @param n Bit width for operands and sum.
+ * @param scale Decimal places (10^scale divisor applied off-circuit for display only).
+ * @custom:input a First summand (base units).
+ * @custom:input b Second summand (base units).
+ * @custom:output sum a + b when representable in n bits; otherwise constraints fail.
+ * @custom:complexity 3×StrictNum2Bits(n): O(n).
+ * @custom:security StrictNum2Bits on a, b, and sum rejects overflow and non-n-bit operands.
+ */
+template FixedPointAdd(n, scale) {
+    assert(n <= 126);
+    assert(pow10(scale) < (1 << n));
+    signal input a;
+    signal input b;
+    signal output sum;
+    component strictA = StrictNum2Bits(n);
+    strictA.in <== a;
+    component strictB = StrictNum2Bits(n);
+    strictB.in <== b;
+    sum <== a + b;
+    component strictSum = StrictNum2Bits(n);
+    strictSum.in <== sum;
+}
+
+/**
+ * @title FixedPointMul
+ * @notice Same-scale fixed-point multiply with floor division by 10^scale.
+ * @dev Prover supplies quotient q and remainder r; circuit checks a * b = q * 10^scale + r and 0 <= r < 10^scale (rounding is floor, not half-up). Requires n <= 126 and 10^scale < 2^n so products stay in range for LessThan.
+ * @param n Bit width for a, b, q, and r.
+ * @param scale Decimal places; divisor is 10^scale.
+ * @custom:input a First factor (base units).
+ * @custom:input b Second factor (base units).
+ * @custom:input q Quotient (floor of (a*b) / 10^scale).
+ * @custom:input r Remainder in [0, 10^scale).
+ * @custom:output quotient Same as q.
+ * @custom:output remainder Same as r.
+ * @custom:complexity 4×StrictNum2Bits(n) + LessThan(n): O(n).
+ * @custom:security All operands range-checked; remainder bounded below 10^scale. Use only when 10^scale < 2^n.
+ */
+template FixedPointMul(n, scale) {
+    assert(n <= 126);
+    var p10 = pow10(scale);
+    assert(p10 < (1 << n));
+    signal input a;
+    signal input b;
+    signal input q;
+    signal input r;
+    signal output quotient;
+    signal output remainder;
+    quotient <== q;
+    remainder <== r;
+    component strictA = StrictNum2Bits(n);
+    strictA.in <== a;
+    component strictB = StrictNum2Bits(n);
+    strictB.in <== b;
+    component strictQ = StrictNum2Bits(n);
+    strictQ.in <== q;
+    component strictR = StrictNum2Bits(n);
+    strictR.in <== r;
+    a * b === q * p10 + r;
+    component lt = LessThan(n);
+    lt.in[0] <== r;
+    lt.in[1] <== p10;
+    lt.out === 1;
+}
+
+/**
+ * @title FixedPointCompare
+ * @notice Strict less-than on same-scale fixed-point base-unit integers.
+ * @dev Range-checks both operands with StrictNum2Bits(n) before LessThan. Returns 1 iff a < b (not <=). scale is documented for pairing with FixedPointAdd/Mul; requires 10^scale < 2^n.
+ * @param n Bit width.
+ * @param scale Decimal scale shared with other fixed-point templates.
+ * @custom:input a First value (base units).
+ * @custom:input b Second value (base units).
+ * @custom:output lt 1 if a < b, else 0.
+ * @custom:complexity 2×StrictNum2Bits(n) + LessThan(n): O(n).
+ * @custom:security LessThan is sound only after StrictNum2Bits on both inputs.
+ */
+template FixedPointCompare(n, scale) {
+    assert(n <= 126);
+    assert(pow10(scale) < (1 << n));
+    signal input a;
+    signal input b;
+    signal output lt;
+    component strictA = StrictNum2Bits(n);
+    strictA.in <== a;
+    component strictB = StrictNum2Bits(n);
+    strictB.in <== b;
+    component cmp = LessThan(n);
+    cmp.in[0] <== a;
+    cmp.in[1] <== b;
+    lt <== cmp.out;
+}
