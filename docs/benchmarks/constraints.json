@@ -1,7 +1,7 @@
 {
-  "packageVersion": "0.10.3",
+  "packageVersion": "0.11.0",
   "circomVersion": "2.2.3",
-  "generatedAt": "2026-11-25T00:34:54.041Z",
+  "generatedAt": "2026-11-27T18:12:41.423Z",
   "source": "test/circuits/*.circom",
   "circuits": [
     {
@@ -135,6 +135,17 @@
       "publicInputs": 0,
       "privateInputs": 5,
       "publicOutputs": 1
+    },
+    {
+      "file": "fixed_point_test.circom",
+      "path": "test/circuits/fixed_point_test.circom",
+      "skipped": false,
+      "skipReason": null,
+      "nonLinearConstraints": 1157,
+      "linearConstraints": 1157,
+      "publicInputs": 0,
+      "privateInputs": 15,
+      "publicOutputs": 3
     },
     {
       "file": "fixed_string_match_test.circom",

@@ -2,11 +2,11 @@
 
 ![opencircom logo](logo.png)
 
-![OpenCircom v0.10.3 release banner](assets/banners/v0.10.3.png)
+![OpenCircom v0.11.0 release banner](assets/banners/v0.11.0.png)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Circom](https://img.shields.io/badge/Circom-ZK%20Circuits-8B5CF6)](https://docs.circom.io/)
-[![Tests](https://img.shields.io/badge/tests-202%2B%20passing-success)](./test)
+[![Tests](https://img.shields.io/badge/tests-215%2B%20passing-success)](./test)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.18-brightgreen)](https://nodejs.org/)
 [![No circomlib](https://img.shields.io/badge/deps-no%20circomlib-informational)](./circuits)
 
@@ -56,7 +56,7 @@ From npm:
 npm install opencircom
 ```
 
-Or add to your `package.json`: `"opencircom": "^0.10.3"`.
+Or add to your `package.json`: `"opencircom": "^0.11.0"`.
 
 ### Hardhat
 
@@ -132,7 +132,7 @@ Full table: [documentation — constraint benchmarks](./docs/documentation.html#
 | Bitify    | `Num2Bits(n)`, `Bits2Num(n)`, `SafeBits2Num(n)` | Bit decomposition; `SafeBits2Num` binary-constrains each bit (prefer for untrusted inputs). |
 | Gates     | `AND`, `OR`, `NOT`, `XOR`, `NAND`, `NOR`, `SafeAND`, `SafeOR`, `SafeNOT`, `SafeXOR`, `SafeNAND`, `SafeNOR`, `MultiAND(n)` | Boolean gates; Safe* variants binary-constrain inputs. |
 | Utils     | `Mux1`, `Mux2`, `MultiMux1`, `MultiMux2`, `SafeMux1`, `SafeMux2`, `SafeMultiMux1`, `SafeMultiMux2`, `MuxN` / `SelectByIndex(N, nBits)`, `Switcher` | Multiplexers; Safe* templates constrain selectors to {0,1}. |
-| Arithmetic | `Sum(n)`, `InnerProduct(n)`, `DivRem(n)`, `ExpByBits(n)` | Sum, dot product; safe div/rem; field exponentiation (exp as bits). |
+| Arithmetic | `Sum(n)`, `InnerProduct(n)`, `DivRem(n)`, `ExpByBits(n)`, `FixedPointAdd(n, scale)`, `FixedPointMul(n, scale)`, `FixedPointCompare(n, scale)` | Sum, dot product; safe div/rem; field exponentiation; same-scale fixed-point add/mul (floor)/compare. |
 | Utils      | `PadBits(n, target)`, `OneOfN(n)`, `IndexOf(N, nBits)` | Zero-pad bits; 1 if value in array; prove index where arr[i]==value. |
 | Utils      | `Min2(n)`, `Max2(n)` | Minimum / maximum of two n-bit values. |
 | Utils      | `MinN(n, N)`, `MaxN(n, N)` | Minimum / maximum of an array of N n-bit values. |
@@ -160,7 +160,7 @@ Full table: [documentation — constraint benchmarks](./docs/documentation.html#
 
 ## Implemented (roadmap coverage)
 
-- **Arithmetic**: Sum(n), InnerProduct(n), DivRem(n) (safe div/rem, all operands range-checked), ExpByBits(n), AssertNotEqual().
+- **Arithmetic**: Sum(n), InnerProduct(n), DivRem(n) (safe div/rem, all operands range-checked), ExpByBits(n), FixedPointAdd/Mul/Compare, AssertNotEqual().
 - **Set membership**: Merkle allowlist (`AllowlistMembership`), sparse Merkle inclusion/exclusion, incremental and update proofs; accumulator-based (`AccumulatorMembership(n)` — witness^member = accumulator, uses PoEVerify).
 - **Payments**: Balance proof (`BalanceProof(n)` — balance ≥ amount, newBalance = balance − amount).
 - **Padding**: PadBits, PadBits10Star (1||0*), PadPKCS7 (block bytes).
@@ -180,6 +180,7 @@ Planned or community-requested; not yet implemented:
 - **Identity & credentials**: Semaphore-style commitment implemented (`IdentityCommitment`, `SemaphoreMembership`). Age/threshold implemented (`AgeThresholdProof`). Selective disclosure buildable from RangeProof + Merkle + commitments.
 - **Trust / tooling (v0.10.1+)**: Constraint-count benchmarks per template — implemented in 0.10.1 (`#13` closed). Poseidon vs circomlib compatibility checks — implemented in 0.10.2 (`#19` closed); `circomlib` 2.0.5 is a dev-only test reference.
 - **Set membership**: Accumulator-based membership implemented (`AccumulatorMembership(n)`, uses PoEVerify). Merkle/sparse already done.
+- **Fixed-point arithmetic**: `FixedPointAdd`, `FixedPointMul`, `FixedPointCompare` — implemented in 0.11.0 (`#10` closed).
 - **Payments**: Confidential transfer and mixer (deposit/withdraw) deferred to application repos; build with Merkle, Nullifier, BalanceProof from this lib.
 - **String & data**: UTF-8 validation and simple fixed/range patterns implemented; full regex and JSON field extraction deferred.
 - **Utilities**: Permutation/sort verification implemented (`SortedCheck`, `IsPermutation`). Other padding or encoding schemes (e.g. ISO padding, length-prefix, base64 in-circuit) deferred; PadBits, PadBits10Star, PadPKCS7 remain. Safe wrappers for AND/OR/XOR/NOT/NAND/NOR, mux/MultiMux, and Bits2Num implemented (`#38` closed in 0.10.0).
@@ -227,7 +228,7 @@ From this repo, `npm run compile:test` compiles every file in `test/circuits/` b
 
 Tests use **real** ZK where applicable: circuits are compiled with Circom, then a small Powers of Tau and zkey are generated, and a Groth16 proof is created and verified with snarkjs (no mocks).
 
-**Coverage** (202+ tests): Poseidon (incl. circomlib compatibility), PoseidonEncrypt, SHA-256, Comparators (incl. AgeThresholdProof), IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates (incl. SafeAND/SafeOR/SafeXOR/SafeNOT/SafeNAND/SafeNOR), Bitify (incl. SafeBits2Num), Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2/SafeMux1/SafeMux2/SafeMultiMux1/SafeMultiMux2, MuxN, Arithmetic (incl. PoEVerify), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist, SortedCheck, IsPermutation), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, MACI, and one full Groth16 prove/verify.
+**Coverage** (215+ tests): Poseidon (incl. circomlib compatibility), PoseidonEncrypt, SHA-256, Comparators (incl. AgeThresholdProof), IdentityCommitment, SemaphoreMembership, AccumulatorMembership, Gates (incl. SafeAND/SafeOR/SafeXOR/SafeNOT/SafeNAND/SafeNOR), Bitify (incl. SafeBits2Num), Merkle (inclusion, AllowlistMembership, sparse, incremental, update), MiMC, Mux1/Mux2/SafeMux1/SafeMux2/SafeMultiMux1/SafeMultiMux2, MuxN, Arithmetic (incl. PoEVerify, FixedPoint add/mul/compare), Utils (PadBits, PadBits10Star, PadPKCS7, OneOfN, IndexOf, Min2, Max2, MinN, MaxN, AllEqual, CountMatches, Tally, ConditionalSelect, BalanceProof, VoteInAllowlist, SortedCheck, IsPermutation), String (Utf8Validation, FixedStringMatch, BytesAllInRange), Switcher, VoteCommitAllowlist, Nullifier, Voting, MACI, and one full Groth16 prove/verify.
 
 ```bash
 npm install

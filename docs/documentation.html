@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="OpenCircom v0.10.3 documentation — installation, CLI, Hardhat/Foundry integration, constraint benchmarks, security, and full circuit template reference." />
+  <meta name="description" content="OpenCircom v0.11.0 documentation — installation, CLI, Hardhat/Foundry integration, constraint benchmarks, security, and full circuit template reference." />
   <title>Documentation — OpenCircom</title>
   <link rel="icon" href="assets/img/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -40,7 +40,7 @@
       <header class="docs-header">
         <p class="section-label">Documentation</p>
         <h1>OpenCircom reference</h1>
-        <p class="docs-lead">v0.10.3 — 110 circuit templates, CLI tooling, integration guides, constraint benchmarks, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
+        <p class="docs-lead">v0.11.0 — 113 circuit templates, CLI tooling, integration guides, constraint benchmarks, and auto-generated template reference from <code>circuits/**/*.circom</code>.</p>
       </header>
 
       <section class="docs-section" id="overview">
@@ -53,7 +53,7 @@
         <h2>Installation</h2>
         <pre class="code-block"><code class="language-bash">npm install opencircom</code></pre>
         <p>Peer dependency: <strong>circom 2.x</strong> must be installed and available on <code>PATH</code>. OpenCircom does not bundle the compiler.</p>
-        <p>Package version: <code>^0.10.3</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
+        <p>Package version: <code>^0.11.0</code>. Circuits live under <code>node_modules/opencircom/circuits/</code>.</p>
       </section>
 
       <section class="docs-section" id="includes">
@@ -97,7 +97,7 @@ npx opencircom path</code></pre>
 
       <section class="docs-section" id="cli-ref">
         <h2>CLI reference</h2>
-        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+; current <code>^0.10.3</code>):</p>
+        <p>The <code>opencircom</code> CLI ships with the npm package (v0.7.0+; current <code>^0.11.0</code>):</p>
         <div class="docs-table-wrap">
           <table class="docs-table">
             <thead><tr><th>Command</th><th>Description</th></tr></thead>
@@ -125,7 +125,7 @@ npm test</code></pre>
 
       <section class="docs-section" id="benchmarks">
         <h2>Constraint benchmarks</h2>
-        <p>Generated 2026-11-25T00:34:54.041Z with Circom 2.2.3 from <code>test/circuits/*.circom</code> (R1CS only). Regenerate with <code>npm run bench:constraints</code> then <code>npm run docs</code>.</p>
+        <p>Generated 2026-11-27T18:12:41.423Z with Circom 2.2.3 from <code>test/circuits/*.circom</code> (R1CS only). Regenerate with <code>npm run bench:constraints</code> then <code>npm run docs</code>.</p>
         
         <div class="docs-table-wrap">
           <table class="docs-table">
@@ -136,6 +136,7 @@ npm test</code></pre>
 <tr><td><code>maci_message_roundtrip_test.circom</code></td><td>3,696</td><td>3,696</td><td>7,392</td><td>0</td><td>16</td><td>0</td></tr>
 <tr><td><code>maci_vote_commit_test.circom</code></td><td>3,042</td><td>3,042</td><td>6,084</td><td>2</td><td>12</td><td>0</td></tr>
 <tr><td><code>merkle_update_test.circom</code></td><td>1,416</td><td>1,416</td><td>2,832</td><td>0</td><td>8</td><td>0</td></tr>
+<tr><td><code>fixed_point_test.circom</code></td><td>1,157</td><td>1,157</td><td>2,314</td><td>0</td><td>15</td><td>3</td></tr>
 <tr><td><code>allowlist_membership_test.circom</code></td><td>924</td><td>924</td><td>1,848</td><td>0</td><td>5</td><td>1</td></tr>
 <tr><td><code>voting_reveal_test.circom</code></td><td>786</td><td>786</td><td>1,572</td><td>3</td><td>2</td><td>1</td></tr>
 <tr><td><code>permutation_test.circom</code></td><td>721</td><td>721</td><td>1,442</td><td>0</td><td>32</td><td>1</td></tr>
@@ -227,7 +228,7 @@ npm test</code></pre>
         <p class="docs-no-results hidden" id="docs-no-results">No templates match your search.</p>
         <section class="docs-category" id="cat-arithmetic">
 <h2>Arithmetic</h2>
-<p class="docs-category-intro">4 templates in this category.</p>
+<p class="docs-category-intro">7 templates in this category.</p>
 <article class="template-doc" id="Sum-arithmetic-circom" data-search="sum sum of n field elements. arithmetic.circom n o(n) constraints (n-1 additions). none; pure arithmetic. constraint count o(n). use for bounded-size arrays. n length of the input array (&gt;= 1). in out">
 <h3 class="template-name"><code>Sum(n)</code></h3>
 <p class="template-notice">Sum of n field elements.</p>
@@ -274,6 +275,42 @@ npm test</code></pre>
 <dt>Parameters</dt><dd><ul><li><code>n</code> — Number of exponent bits (exp in [0, 2^n - 1]).</li></ul></dd>
 <dt>Inputs</dt><dd><ul><li><code>base</code> — Base (field element).</li><li><code>exp[n]</code></li></ul></dd>
 <dt>Outputs</dt><dd><ul><li><code>out</code> — base^exp in the field.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/arithmetic.circom</code></p>
+</article>
+<article class="template-doc" id="FixedPointAdd-arithmetic-circom" data-search="fixedpointadd same-scale fixed-point addition on n-bit base-unit integers (overflow rejected). arithmetic.circom n, scale 3×strictnum2bits(n): o(n). strictnum2bits on a, b, and sum rejects overflow and non-n-bit operands. operands share decimal scale off-circuit; values are stored as integers × 10^scale. sum is range-checked with strictnum2bits(n). requires n &lt;= 126 and 10^scale &lt; 2^n. n bit width for operands and sum. scale decimal places (10^scale divisor applied off-circuit for display only). a b sum">
+<h3 class="template-name"><code>FixedPointAdd(n, scale)</code></h3>
+<p class="template-notice">Same-scale fixed-point addition on n-bit base-unit integers (overflow rejected).</p>
+<p class="template-dev"><strong>Dev:</strong> Operands share decimal scale off-circuit; values are stored as integers × 10^scale. Sum is range-checked with StrictNum2Bits(n). Requires n &lt;= 126 and 10^scale &lt; 2^n.</p>
+<p class="template-meta"><strong>Complexity:</strong> 3×StrictNum2Bits(n): O(n).</p>
+<p class="template-meta template-security"><strong>Security:</strong> StrictNum2Bits on a, b, and sum rejects overflow and non-n-bit operands.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width for operands and sum.</li><li><code>scale</code> — Decimal places (10^scale divisor applied off-circuit for display only).</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First summand (base units).</li><li><code>b</code> — Second summand (base units).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>sum</code> — a + b when representable in n bits; otherwise constraints fail.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/arithmetic.circom</code></p>
+</article>
+<article class="template-doc" id="FixedPointMul-arithmetic-circom" data-search="fixedpointmul same-scale fixed-point multiply with floor division by 10^scale. arithmetic.circom n, scale 4×strictnum2bits(n) + lessthan(n): o(n). all operands range-checked; remainder bounded below 10^scale. use only when 10^scale &lt; 2^n. prover supplies quotient q and remainder r; circuit checks a * b = q * 10^scale + r and 0 &lt;= r &lt; 10^scale (rounding is floor, not half-up). requires n &lt;= 126 and 10^scale &lt; 2^n so products stay in range for lessthan. n bit width for a, b, q, and r. scale decimal places; divisor is 10^scale. a b q r quotient remainder">
+<h3 class="template-name"><code>FixedPointMul(n, scale)</code></h3>
+<p class="template-notice">Same-scale fixed-point multiply with floor division by 10^scale.</p>
+<p class="template-dev"><strong>Dev:</strong> Prover supplies quotient q and remainder r; circuit checks a * b = q * 10^scale + r and 0 &lt;= r &lt; 10^scale (rounding is floor, not half-up). Requires n &lt;= 126 and 10^scale &lt; 2^n so products stay in range for LessThan.</p>
+<p class="template-meta"><strong>Complexity:</strong> 4×StrictNum2Bits(n) + LessThan(n): O(n).</p>
+<p class="template-meta template-security"><strong>Security:</strong> All operands range-checked; remainder bounded below 10^scale. Use only when 10^scale &lt; 2^n.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width for a, b, q, and r.</li><li><code>scale</code> — Decimal places; divisor is 10^scale.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First factor (base units).</li><li><code>b</code> — Second factor (base units).</li><li><code>q</code> — Quotient (floor of (a*b) / 10^scale).</li><li><code>r</code> — Remainder in [0, 10^scale).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>quotient</code> — Same as q.</li><li><code>remainder</code> — Same as r.</li></ul></dd></dl>
+<p class="template-file">Defined in <code>circuits/arithmetic.circom</code></p>
+</article>
+<article class="template-doc" id="FixedPointCompare-arithmetic-circom" data-search="fixedpointcompare strict less-than on same-scale fixed-point base-unit integers. arithmetic.circom n, scale 2×strictnum2bits(n) + lessthan(n): o(n). lessthan is sound only after strictnum2bits on both inputs. range-checks both operands with strictnum2bits(n) before lessthan. returns 1 iff a &lt; b (not &lt;=). scale is documented for pairing with fixedpointadd/mul; requires 10^scale &lt; 2^n. n bit width. scale decimal scale shared with other fixed-point templates. a b lt">
+<h3 class="template-name"><code>FixedPointCompare(n, scale)</code></h3>
+<p class="template-notice">Strict less-than on same-scale fixed-point base-unit integers.</p>
+<p class="template-dev"><strong>Dev:</strong> Range-checks both operands with StrictNum2Bits(n) before LessThan. Returns 1 iff a &lt; b (not &lt;=). scale is documented for pairing with FixedPointAdd/Mul; requires 10^scale &lt; 2^n.</p>
+<p class="template-meta"><strong>Complexity:</strong> 2×StrictNum2Bits(n) + LessThan(n): O(n).</p>
+<p class="template-meta template-security"><strong>Security:</strong> LessThan is sound only after StrictNum2Bits on both inputs.</p>
+<dl class="template-dl">
+<dt>Parameters</dt><dd><ul><li><code>n</code> — Bit width.</li><li><code>scale</code> — Decimal scale shared with other fixed-point templates.</li></ul></dd>
+<dt>Inputs</dt><dd><ul><li><code>a</code> — First value (base units).</li><li><code>b</code> — Second value (base units).</li></ul></dd>
+<dt>Outputs</dt><dd><ul><li><code>lt</code> — 1 if a &lt; b, else 0.</li></ul></dd></dl>
 <p class="template-file">Defined in <code>circuits/arithmetic.circom</code></p>
 </article>
 </section>
@@ -1314,7 +1351,7 @@ npm test</code></pre>
         <a href="https://www.npmjs.com/package/opencircom">npm</a>
         <a href="https://github.com/jose-compu/opencircom/blob/main/LICENSE">MIT License</a>
       </div>
-      <p class="footer-copy">OpenCircom v0.10.3 · Generated by <code>npm run docs</code></p>
+      <p class="footer-copy">OpenCircom v0.11.0 · Generated by <code>npm run docs</code></p>
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>

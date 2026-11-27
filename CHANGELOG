@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.11.0
+
+- Arithmetic: `FixedPointAdd(n, scale)`, `FixedPointMul(n, scale)`, and `FixedPointCompare(n, scale)` for same-scale base units. Add rejects an n-bit overflow. Mul checks `a * b = q * 10^scale + r` with `r < 10^scale` (floor). Compare is strict `<` after `StrictNum2Bits(n)`. `#10`
+- Tests: max and zero add, overflow and out-of-range rejection, floor truncation, and a 6-decimal transfer that rejects amount > balance.
+
 ## 0.10.3
 
 - Publish: the confirm step polls `https://registry.npmjs.org/opencircom/${version}` every 15s for up to about 5 minutes; if the version is still not visible it emits `::warning::` and exits 0. `npm publish` exiting 0 remains the success signal. OIDC only (`id-token: write`, npm `>=11.5.1 <12`).
